@@ -67,9 +67,8 @@ export default function WinnersTicker({ winners }: WinnersTickerProps) {
                 </div>
               )}
               <div className="flex-1">
-                <p className="text-gold-300 text-sm font-medium mb-1">🎉 Winner</p>
-                <p className="text-white text-lg font-bold">{currentWinner.name}</p>
-                <p className="text-gold-200 text-sm mt-1">Won: {currentWinner.prizeName}</p>
+                <p className="text-white text-xl font-bold">{currentWinner.name}</p>
+                <p className="text-gold-200 text-base mt-2">{currentWinner.prizeName}</p>
               </div>
             </div>
           </div>
