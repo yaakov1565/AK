@@ -1,0 +1,71 @@
+// Prisma schema for Ateres Kallah - Spin to Win
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Prize model - stores all available prizes with inventory
+model Prize {
+  id                String   @id @default(cuid())
+  title             String
+  imageUrl          String?
+  quantityTotal     Int      // Total prizes available
+  quantityRemaining Int      // Remaining prizes (decremented on win)
+  weight            Int      // Weight for probability (higher = more likely)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relation to winners
+  winners           Winner[]
+  
+  @@index([quantityRemaining]) // Index for fast filtering of available prizes
+}
+
+// SpinCode model - one-time use codes
+model SpinCode {
+  id        String    @id @default(cuid())
+  code      String    @unique // The actual code (e.g., "AK-2024-XXXX")
+  name      String?   // Name associated with this code
+  email     String?   // Email address associated with this code
+  isUsed    Boolean   @default(false)
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  
+  // Relation to winner (if code was used)
+  winner    Winner?
+  
+  @@index([code, isUsed]) // Composite index for fast code validation
+  @@index([email]) // Index for searching codes by email
+  @@index([name]) // Index for searching codes by name
+}
+
+// Winner model - tracks all wins
+model Winner {
+  id        String   @id @default(cuid())
+  codeId    String   @unique // One code = one winner
+  prizeId   String
+  wonAt     DateTime @default(now())
+  prizeSent Boolean  @default(false) // Track if prize has been sent
+  notes     String?  // Optional notes about prize fulfillment
+  
+  // Relations
+  code      SpinCode @relation(fields: [codeId], references: [id])
+  prize     Prize    @relation(fields: [prizeId], references: [id])
+  
+  @@index([wonAt]) // Index for sorting by date in admin panel
+}
+
+// RateLimit model - tracks failed code attempts to prevent brute force
+model RateLimit {
+  id         String   @id @default(cuid())
+  identifier String   @unique // IP address or session identifier
+  attempts   Int      @default(0)
+  lastAttempt DateTime @default(now())
+  
+  @@index([identifier, lastAttempt])
+}
