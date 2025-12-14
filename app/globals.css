@@ -5,12 +5,26 @@
 /* Cosmic theme matching the advert */
 body {
   @apply text-white;
-  background: linear-gradient(135deg, #1a2847, #2d3561, #3d2855, #5a2d5f, #6b2d5c, #5a2d5f, #3d2855, #2d3561);
+  background: linear-gradient(135deg, #1a2847, #2d3561, #3d2855, #5a2d5f, #6b2d5c, #5a2d5f, #3d2855, #2d3561, #1a2847);
   background-size: 400% 400%;
+  background-attachment: fixed;
   min-height: 100vh;
+  width: 100%;
   position: relative;
   overflow-x: hidden;
   animation: gradientShift 15s ease infinite;
+}
+
+/* Fix for background line/seam issue */
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+body::before,
+body::after {
+  width: 100vw;
+  left: 0;
 }
 
 @keyframes gradientShift {
@@ -29,34 +43,34 @@ body {
 body::before {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(circle, rgba(255, 215, 0, 0.8) 1px, transparent 1px),
-    radial-gradient(circle, rgba(255, 223, 128, 0.6) 1px, transparent 1px),
-    radial-gradient(circle, rgba(255, 200, 100, 0.7) 1px, transparent 1px),
-    radial-gradient(circle, rgba(212, 175, 55, 0.5) 1px, transparent 1px),
-    radial-gradient(circle, rgba(255, 215, 0, 0.4) 2px, transparent 2px),
-    radial-gradient(circle, rgba(255, 180, 80, 0.6) 1px, transparent 1px);
-  background-size: 
-    550px 350px,
-    450px 400px,
-    650px 300px,
-    500px 450px,
-    600px 350px,
-    400px 500px;
-  background-position: 
-    0 0,
-    50px 100px,
-    100px 50px,
-    150px 200px,
-    250px 150px,
-    300px 250px;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
+  background-image:
+    radial-gradient(circle, rgba(255, 215, 0, 0.7) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 223, 128, 0.5) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 200, 100, 0.6) 1px, transparent 1px),
+    radial-gradient(circle, rgba(212, 175, 55, 0.4) 1px, transparent 1px),
+    radial-gradient(circle, rgba(255, 215, 0, 0.3) 2px, transparent 2px),
+    radial-gradient(circle, rgba(255, 180, 80, 0.5) 1px, transparent 1px);
+  background-size:
+    567px 389px,
+    483px 421px,
+    631px 317px,
+    521px 467px,
+    613px 373px,
+    419px 503px;
+  background-position:
+    13px 27px,
+    71px 113px,
+    127px 59px,
+    163px 211px,
+    257px 163px,
+    311px 269px;
   pointer-events: none;
   z-index: 1;
-  animation: twinkle 3s ease-in-out infinite;
+  animation: twinkle 3s ease-in-out infinite, particleMove 20s linear infinite;
 }
 
 /* Twinkling animation */
@@ -69,19 +83,38 @@ body::before {
   }
 }
 
+/* Particle movement animation */
+@keyframes particleMove {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(20px, -30px) rotate(90deg);
+  }
+  50% {
+    transform: translate(-15px, -60px) rotate(180deg);
+  }
+  75% {
+    transform: translate(-30px, -30px) rotate(270deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(360deg);
+  }
+}
+
 /* Larger glowing orbs */
 body::after {
   content: '';
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: -5%;
+  left: -5%;
+  width: 110%;
+  height: 110%;
   background-image:
-    radial-gradient(circle at 15% 25%, rgba(255, 140, 60, 0.15) 0%, transparent 25%),
-    radial-gradient(circle at 85% 75%, rgba(255, 180, 100, 0.12) 0%, transparent 30%),
-    radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 35%),
-    radial-gradient(circle at 75% 30%, rgba(255, 200, 120, 0.1) 0%, transparent 28%);
+    radial-gradient(circle at 15% 25%, rgba(255, 140, 60, 0.12) 0%, transparent 25%),
+    radial-gradient(circle at 85% 75%, rgba(255, 180, 100, 0.1) 0%, transparent 30%),
+    radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.06) 0%, transparent 35%),
+    radial-gradient(circle at 75% 30%, rgba(255, 200, 120, 0.08) 0%, transparent 28%);
   pointer-events: none;
   z-index: 0;
   animation: float 8s ease-in-out infinite;
@@ -89,10 +122,20 @@ body::after {
 
 @keyframes float {
   0%, 100% {
-    transform: translate(0, 0);
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+  25% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 1;
   }
   50% {
-    transform: translate(10px, -10px);
+    transform: translate(10px, -40px) scale(0.9);
+    opacity: 0.6;
+  }
+  75% {
+    transform: translate(-20px, -20px) scale(1.05);
+    opacity: 0.9;
   }
 }
 
@@ -150,6 +193,28 @@ canvas[style*="position: fixed"] {
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 

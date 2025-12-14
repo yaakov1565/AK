@@ -8,6 +8,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
+import SoundEffects from '@/lib/sound-effects'
 
 interface Prize {
   id: string
@@ -20,6 +21,7 @@ function ResultContent() {
   const prizeId = searchParams.get('prize')
   const [prize, setPrize] = useState<Prize | null>(null)
   const [loading, setLoading] = useState(true)
+  const [soundEffects] = useState(() => new SoundEffects())
 
   useEffect(() => {
     if (!prizeId) return
@@ -31,14 +33,15 @@ function ResultContent() {
         setPrize(data)
         setLoading(false)
         
-        // Fire confetti immediately when prize data is loaded
+        // Fire confetti and play clapping sound immediately when prize data is loaded
         triggerConfetti()
+        soundEffects.playClappingSound()
       })
       .catch(err => {
         console.error('Failed to load prize:', err)
         setLoading(false)
       })
-  }, [prizeId])
+  }, [prizeId, soundEffects])
 
   const triggerConfetti = () => {
     console.log('🎉 Triggering confetti!')
@@ -116,36 +119,36 @@ function ResultContent() {
     <main className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="max-w-2xl w-full text-center">
         {/* Success Header */}
-        <div className="mb-8">
-          <h1 className="text-6xl md:text-7xl font-serif font-bold text-gold-300 mb-4 animate-pulse">
+        <div className="mb-8 animate-[fadeInUp_0.6s_ease-out]">
+          <h1 className="text-6xl md:text-7xl font-serif font-bold text-gold-300 mb-4 animate-[bounce_1s_ease-in-out_0.3s]">
             🎉
           </h1>
-          <h2 className="text-5xl md:text-6xl font-serif font-bold text-gold-300 mb-4 text-glow">
+          <h2 className="text-5xl md:text-6xl font-serif font-bold text-gold-300 mb-4 text-glow animate-[fadeInUp_0.8s_ease-out_0.2s_both]">
             Congratulations!
           </h2>
-          <p className="text-2xl text-gold-400 italic">
+          <p className="text-2xl text-gold-400 italic animate-[fadeInUp_0.8s_ease-out_0.4s_both]">
             You won:
           </p>
         </div>
 
         {/* Prize Display */}
-        <div className="bg-navy-800/40 backdrop-blur-sm border-4 border-gold-400/60 rounded-2xl p-12 shadow-2xl mb-8">
+        <div className="bg-navy-800/40 backdrop-blur-sm border-4 border-gold-400/60 rounded-2xl p-12 shadow-2xl mb-8 animate-[scaleIn_0.8s_ease-out_0.6s_both]">
           {prize.imageUrl && (
-            <div className="mb-6">
+            <div className="mb-6 animate-[fadeIn_0.8s_ease-out_0.8s_both]">
               <img
                 src={prize.imageUrl}
                 alt={prize.title}
-                className="max-w-full max-h-64 mx-auto rounded-lg shadow-lg"
+                className="max-w-full max-h-64 mx-auto rounded-lg shadow-lg transform transition-transform hover:scale-105"
               />
             </div>
           )}
-          <h3 className="text-3xl md:text-4xl font-bold text-gold-300 mb-4 text-glow">
+          <h3 className="text-3xl md:text-4xl font-bold text-gold-300 mb-4 text-glow animate-[fadeIn_0.8s_ease-out_1s_both]">
             {prize.title}
           </h3>
         </div>
 
         {/* Next Steps */}
-        <div className="bg-navy-800/40 backdrop-blur-sm border-2 border-gold-400/40 rounded-lg p-8 mb-6">
+        <div className="bg-navy-800/40 backdrop-blur-sm border-2 border-gold-400/40 rounded-lg p-8 mb-6 animate-[fadeInUp_0.8s_ease-out_1.2s_both]">
           <h4 className="text-xl font-bold text-gold-300 mb-4">
             What happens next?
           </h4>
@@ -158,7 +161,7 @@ function ResultContent() {
         </div>
 
         {/* Back to Home */}
-        <div className="mt-8">
+        <div className="mt-8 animate-[fadeInUp_0.8s_ease-out_1.4s_both]">
           <a
             href="/"
             className="inline-block bg-gold-400 hover:bg-gold-500 text-navy-900 font-bold py-3 px-8 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg text-lg"

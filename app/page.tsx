@@ -2,7 +2,7 @@
 
 /**
  * Main landing page - Code entry and spin interface
- * 
+ *
  * User flow:
  * 1. Enter code
  * 2. Click spin button
@@ -13,11 +13,19 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import PrizeWheel from '@/components/PrizeWheel'
+import WinnersTicker from '@/components/WinnersTicker'
 
 interface Prize {
   id: string
   title: string
   imageUrl: string | null
+}
+
+interface Winner {
+  name: string
+  prizeName: string
+  prizeImage: string | null
+  wonAt: string
 }
 
 export default function HomePage() {
@@ -29,13 +37,26 @@ export default function HomePage() {
   const [hasValidCode, setHasValidCode] = useState(false)
   const [isSpinning, setIsSpinning] = useState(false)
   const [selectedPrizeId, setSelectedPrizeId] = useState<string | null>(null)
+  const [winners, setWinners] = useState<Winner[]>([])
 
   // Load prizes on mount
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/prizes`)
+    fetch('/api/prizes')
       .then(res => res.json())
       .then(data => setPrizes(data))
       .catch(err => console.error('Failed to load prizes:', err))
+  }, [])
+
+  // Load recent winners on mount
+  useEffect(() => {
+    fetch('/api/last-winner')
+      .then(res => res.json())
+      .then(data => {
+        if (data.winners) {
+          setWinners(data.winners)
+        }
+      })
+      .catch(err => console.error('Failed to load recent winners:', err))
   }, [])
 
   // Handle code validation
@@ -120,6 +141,9 @@ export default function HomePage() {
           Enter your one-time code below to spin the prize wheel and win your exclusive prize.
         </p>
       </div>
+
+      {/* Winners Ticker */}
+      <WinnersTicker winners={winners} />
 
       {/* Prize Wheel */}
       {prizes.length > 0 && (

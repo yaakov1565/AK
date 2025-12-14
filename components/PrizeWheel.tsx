@@ -32,10 +32,43 @@ export default function PrizeWheel({
 }: PrizeWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [rotation, setRotation] = useState(0)
+  const [hasEntrance, setHasEntrance] = useState(false)
   const animationRef = useRef<number>()
   const soundEffectsRef = useRef<SoundEffects | null>(null)
   const spinSoundNodesRef = useRef<{ oscillator: OscillatorNode; gainNode: GainNode } | null>(null)
   const lastTickRotation = useRef<number>(0)
+
+  // Entrance animation - subtle spin when wheel first appears
+  useEffect(() => {
+    if (prizes.length === 0 || hasEntrance) return
+    
+    const duration = 1500 // 1.5 seconds
+    const startTime = Date.now()
+    const targetRotation = 360 * 0.5 // Half spin
+    
+    const animate = () => {
+      const now = Date.now()
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      
+      // Ease-in-out for smooth entrance
+      const easeProgress = progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2
+      
+      const currentRotation = targetRotation * easeProgress
+      setRotation(currentRotation)
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      } else {
+        setHasEntrance(true)
+      }
+    }
+    
+    // Small delay before starting entrance animation
+    setTimeout(() => requestAnimationFrame(animate), 300)
+  }, [prizes.length, hasEntrance])
 
   // Initialize sound effects
   useEffect(() => {
@@ -293,11 +326,11 @@ export default function PrizeWheel({
   }
 
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-4 animate-[fadeInScale_1s_ease-out]">
       <canvas
         ref={canvasRef}
-        width={500}
-        height={500}
+        width={700}
+        height={700}
         className="max-w-full h-auto"
       />
     </div>
