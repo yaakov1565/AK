@@ -2,7 +2,7 @@
 
 /**
  * Winners Ticker Component
- * Displays recent winners in an auto-sliding carousel
+ * Displays recent winners in an elegant horizontal carousel
  */
 
 import { useState, useEffect } from 'react'
@@ -31,8 +31,8 @@ export default function WinnersTicker({ winners }: WinnersTickerProps) {
       setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % winners.length)
         setIsSliding(false)
-      }, 500) // Match this with slide-out animation duration
-    }, 4000) // Show each winner for 4 seconds
+      }, 500)
+    }, 4000)
 
     return () => clearInterval(interval)
   }, [winners.length])
@@ -44,52 +44,96 @@ export default function WinnersTicker({ winners }: WinnersTickerProps) {
   const currentWinner = winners[currentIndex]
 
   return (
-    <div className="w-full max-w-2xl mb-8">
-      <div className="overflow-hidden">
-        <h3 className="text-gold-300 text-center text-lg font-semibold mb-3 tracking-wide">
-          ✨ Latest Winners ✨
-        </h3>
-        <div className="bg-gradient-to-r from-gold-400/10 to-gold-600/10 backdrop-blur-sm border border-gold-400/30 rounded-lg p-6 shadow-xl relative overflow-hidden">
-          {/* Sliding animation wrapper */}
+    <div className="w-full max-w-4xl mb-8">
+      <div className="relative">
+        <div className="bg-gradient-to-br from-gold-500/5 via-gold-400/10 to-gold-500/5 backdrop-blur-md border-2 border-gold-400/40 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+          {/* Shimmer effect overlay */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-shimmer"></div>
+          
+          {/* Title */}
+          <div className="text-center mb-4">
+            <h3 className="text-gold-400/90 text-sm font-semibold tracking-[0.3em] uppercase">
+              Recent Winners
+            </h3>
+          </div>
+
+          {/* Winner Content with fade animation */}
           <div
-            className={`transition-all duration-500 ease-in-out ${
-              isSliding ? 'transform translate-x-full opacity-0' : 'transform translate-x-0 opacity-100'
+            className={`transition-all duration-700 ease-in-out ${
+              isSliding ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
             }`}
           >
-            <div className="flex flex-col items-center gap-4 text-center">
+            <div className="flex flex-col items-center justify-center gap-4">
+              {/* Prize Image */}
               {currentWinner.prizeImage && (
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 relative group">
+                  <div className="absolute inset-0 bg-gold-400/20 rounded-xl blur-xl group-hover:blur-2xl transition-all"></div>
                   <img
                     src={currentWinner.prizeImage}
                     alt={currentWinner.prizeName}
-                    className="w-20 h-20 object-cover rounded-lg border-2 border-gold-400/50 shadow-lg"
+                    className="relative w-24 h-24 object-cover rounded-xl border-2 border-gold-400/60 shadow-2xl transform group-hover:scale-105 transition-transform"
                   />
                 </div>
               )}
-              <div className="flex-1">
-                <p className="text-white text-xl font-bold">{currentWinner.name}</p>
-                <p className="text-gold-200 text-base mt-2">{currentWinner.prizeName}</p>
+              
+              {/* Winner Info - Centered */}
+              <div className="text-center">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <span className="text-gold-400 text-lg">🎉</span>
+                  <p className="text-gold-300 text-2xl font-bold tracking-wide">
+                    {currentWinner.name}
+                  </p>
+                </div>
+                <p className="text-gold-400/80 text-base">
+                  won{' '}
+                  <span className="font-semibold text-gold-300">
+                    {currentWinner.prizeName}
+                  </span>
+                </p>
               </div>
             </div>
           </div>
           
-          {/* Progress indicator dots */}
+          {/* Progress Indicator */}
           {winners.length > 1 && (
-            <div className="flex justify-center gap-2 mt-4">
+            <div className="flex justify-center gap-2 mt-5 pt-4 border-t border-gold-400/20">
               {winners.map((_, index) => (
-                <div
+                <button
                   key={index}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                  onClick={() => {
+                    setIsSliding(true)
+                    setTimeout(() => {
+                      setCurrentIndex(index)
+                      setIsSliding(false)
+                    }, 500)
+                  }}
+                  className={`h-2 rounded-full transition-all duration-300 hover:opacity-100 ${
                     index === currentIndex
-                      ? 'w-8 bg-gold-400'
-                      : 'w-1.5 bg-gold-400/30'
+                      ? 'w-10 bg-gold-400 opacity-100'
+                      : 'w-2 bg-gold-400/40 opacity-60'
                   }`}
+                  aria-label={`View winner ${index + 1}`}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Add shimmer animation to global styles */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% {
+            transform: translateX(-100%);
+          }
+          100% {
+            transform: translateX(100%);
+          }
+        }
+        .animate-shimmer {
+          animation: shimmer 3s infinite;
+        }
+      `}</style>
     </div>
   )
 }

@@ -35,12 +35,12 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { title, imageUrl, quantityTotal, weight } = body
+    const { title, description, imageUrl, quantityTotal, weight } = body
 
     // Validate required fields
-    if (!title || !quantityTotal || !weight) {
+    if (!title || !description || !quantityTotal || !weight) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, quantityTotal, and weight are required' },
+        { error: 'Missing required fields: title, description, quantityTotal, and weight are required' },
         { status: 400 }
       )
     }
@@ -57,6 +57,7 @@ export async function POST(request: Request) {
     const prize = await prisma.prize.create({
       data: {
         title,
+        description,
         imageUrl: imageUrl || null,
         quantityTotal,
         quantityRemaining: quantityTotal, // Initially, all are remaining

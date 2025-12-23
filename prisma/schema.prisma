@@ -12,7 +12,8 @@ datasource db {
 // Prize model - stores all available prizes with inventory
 model Prize {
   id                String   @id @default(cuid())
-  title             String
+  title             String   // Short title shown on the wheel
+  description       String   // Full description shown when won
   imageUrl          String?
   quantityTotal     Int      // Total prizes available
   quantityRemaining Int      // Remaining prizes (decremented on win)

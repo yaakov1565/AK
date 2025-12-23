@@ -13,6 +13,7 @@ import SoundEffects from '@/lib/sound-effects'
 interface Prize {
   id: string
   title: string
+  description: string
   imageUrl: string | null
 }
 
@@ -137,13 +138,13 @@ function ResultContent() {
             <div className="mb-6 animate-[fadeIn_0.8s_ease-out_0.8s_both]">
               <img
                 src={prize.imageUrl}
-                alt={prize.title}
+                alt={prize.description}
                 className="max-w-full max-h-64 mx-auto rounded-lg shadow-lg transform transition-transform hover:scale-105"
               />
             </div>
           )}
           <h3 className="text-3xl md:text-4xl font-bold text-gold-300 mb-4 text-glow animate-[fadeIn_0.8s_ease-out_1s_both]">
-            {prize.title}
+            {prize.description}
           </h3>
         </div>
 

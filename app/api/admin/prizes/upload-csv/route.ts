@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     const headers = lines[0].split(',').map(h => h.trim())
     
     // Validate headers
-    const requiredHeaders = ['title', 'quantityTotal', 'weight']
+    const requiredHeaders = ['title', 'description', 'quantityTotal', 'weight']
     const missingHeaders = requiredHeaders.filter(h => !headers.includes(h))
     
     if (missingHeaders.length > 0) {
@@ -97,12 +97,13 @@ export async function POST(request: NextRequest) {
       const quantityTotal = parseInt(prize.quantityTotal)
       const weight = parseInt(prize.weight)
       
-      if (!prize.title || isNaN(quantityTotal) || isNaN(weight)) {
+      if (!prize.title || !prize.description || isNaN(quantityTotal) || isNaN(weight)) {
         continue // Skip invalid rows
       }
 
       prizes.push({
         title: sanitizeCSVValue(prize.title),
+        description: sanitizeCSVValue(prize.description),
         imageUrl: prize.imageUrl || null,
         quantityTotal,
         quantityRemaining: quantityTotal,

@@ -125,7 +125,7 @@ export default async function AdminPage() {
           <form action="/api/admin/logout" method="POST">
             <button
               type="submit"
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
             >
               Logout
             </button>

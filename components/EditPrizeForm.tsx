@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation'
 interface Prize {
   id: string
   title: string
+  description: string
   imageUrl: string | null
   quantityTotal: number
   quantityRemaining: number
@@ -24,6 +25,39 @@ export default function EditPrizeForm({ prize }: EditPrizeFormProps) {
   const router = useRouter()
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [imageUrl, setImageUrl] = useState(prize.imageUrl || '')
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploadingImage(true)
+    setMessage('')
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setImageUrl(result.url)
+        setMessage('✓ Image uploaded successfully')
+      } else {
+        setMessage(`✗ ${result.error || 'Failed to upload image'}`)
+      }
+    } catch (error) {
+      setMessage('✗ Error uploading image')
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -33,7 +67,8 @@ export default function EditPrizeForm({ prize }: EditPrizeFormProps) {
     const formData = new FormData(e.currentTarget)
     const data = {
       title: formData.get('title') as string,
-      imageUrl: formData.get('imageUrl') as string,
+      description: formData.get('description') as string,
+      imageUrl: imageUrl,
       quantityTotal: parseInt(formData.get('quantityTotal') as string),
       weight: parseInt(formData.get('weight') as string),
     }
@@ -65,26 +100,69 @@ export default function EditPrizeForm({ prize }: EditPrizeFormProps) {
     <div className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-8">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-gray-300 mb-2">Prize Title *</label>
+          <label className="block text-gray-300 mb-2">Prize Title (shown on wheel) *</label>
           <input
             type="text"
             name="title"
             required
             defaultValue={prize.title}
             className="w-full bg-navy-900 border border-gold-500/30 rounded px-4 py-2 text-white focus:border-gold-500 focus:outline-none"
-            placeholder="e.g., Free Dessert"
+            placeholder="e.g., Dessert"
           />
+          <small className="text-gray-500">Keep it short for the wheel display</small>
         </div>
 
         <div>
-          <label className="block text-gray-300 mb-2">Image URL (optional)</label>
+          <label className="block text-gray-300 mb-2">Prize Description (shown when won) *</label>
           <input
-            type="url"
-            name="imageUrl"
-            defaultValue={prize.imageUrl || ''}
+            type="text"
+            name="description"
+            required
+            defaultValue={prize.description}
             className="w-full bg-navy-900 border border-gold-500/30 rounded px-4 py-2 text-white focus:border-gold-500 focus:outline-none"
-            placeholder="https://example.com/image.jpg"
+            placeholder="e.g., Free Dessert of Your Choice"
           />
+          <small className="text-gray-500">Full description displayed on win screen</small>
+        </div>
+
+        <div>
+          <label className="block text-gray-300 mb-2">Prize Image (optional)</label>
+          
+          {/* Image preview */}
+          {imageUrl && (
+            <div className="mb-4">
+              <img
+                src={imageUrl}
+                alt="Preview"
+                className="w-32 h-32 object-cover rounded-lg border-2 border-gold-500/30"
+              />
+            </div>
+          )}
+          
+          {/* Upload button */}
+          <label className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors cursor-pointer mb-2">
+            {isUploadingImage ? 'Uploading...' : '📤 Upload Image'}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={isUploadingImage}
+              className="hidden"
+            />
+          </label>
+          
+          <span className="text-gray-500 text-sm ml-4">or</span>
+          
+          {/* URL input */}
+          <input
+            type="text"
+            name="imageUrl"
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className="w-full mt-2 bg-navy-900 border border-gold-500/30 rounded px-4 py-2 text-white focus:border-gold-500 focus:outline-none"
+            placeholder="Paste image URL here"
+          />
+          <small className="text-gray-500">Upload a file or paste an image URL</small>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

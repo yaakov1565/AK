@@ -27,18 +27,23 @@ export async function GET() {
       }
     })
 
-    if (recentWinners.length === 0) {
-      return NextResponse.json({ winners: [] })
-    }
+    const response = recentWinners.length === 0
+      ? NextResponse.json({ winners: [] })
+      : NextResponse.json({
+          winners: recentWinners.map((winner: any) => ({
+            name: winner.code.name || 'Anonymous',
+            prizeName: winner.prize.title,
+            prizeImage: winner.prize.imageUrl,
+            wonAt: winner.wonAt
+          }))
+        })
 
-    return NextResponse.json({
-      winners: recentWinners.map((winner: any) => ({
-        name: winner.code.name || 'Anonymous',
-        prizeName: winner.prize.title,
-        prizeImage: winner.prize.imageUrl,
-        wonAt: winner.wonAt
-      }))
-    })
+    // Disable caching to ensure fresh data after resets
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    response.headers.set('Pragma', 'no-cache')
+    response.headers.set('Expires', '0')
+    
+    return response
   } catch (error) {
     console.error('Failed to fetch recent winners:', error)
     return NextResponse.json({ winners: [] })

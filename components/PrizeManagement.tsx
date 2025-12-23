@@ -10,7 +10,40 @@ import { useState } from 'react'
 export default function PrizeManagement() {
   const [isAddingPrize, setIsAddingPrize] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [imageUrl, setImageUrl] = useState('')
   const [message, setMessage] = useState('')
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploadingImage(true)
+    setMessage('')
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setImageUrl(result.url)
+        setMessage('✓ Image uploaded successfully')
+      } else {
+        setMessage(`✗ ${result.error || 'Failed to upload image'}`)
+      }
+    } catch (error) {
+      setMessage('✗ Error uploading image')
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
 
   const handleAddPrize = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -19,7 +52,8 @@ export default function PrizeManagement() {
     const formData = new FormData(e.currentTarget)
     const data = {
       title: formData.get('title') as string,
-      imageUrl: formData.get('imageUrl') as string,
+      description: formData.get('description') as string,
+      imageUrl: imageUrl || (formData.get('imageUrl') as string),
       quantityTotal: parseInt(formData.get('quantityTotal') as string),
       weight: parseInt(formData.get('weight') as string),
     }
@@ -34,6 +68,7 @@ export default function PrizeManagement() {
       if (response.ok) {
         setMessage('Prize added successfully!')
         setIsAddingPrize(false)
+        setImageUrl('')
         setTimeout(() => window.location.reload(), 1000)
       } else {
         const error = await response.json()
@@ -124,24 +159,67 @@ export default function PrizeManagement() {
           <h3 className="text-xl font-bold text-gold-400 mb-4">Add New Prize</h3>
           
           <div>
-            <label className="block text-gray-300 mb-2">Prize Title *</label>
+            <label className="block text-gray-300 mb-2">Prize Title (shown on wheel) *</label>
             <input
               type="text"
               name="title"
               required
               className="w-full bg-navy-900 border border-gold-500/30 rounded px-4 py-2 text-white focus:border-gold-500 focus:outline-none"
-              placeholder="e.g., Free Dessert"
+              placeholder="e.g., Dessert"
             />
+            <small className="text-gray-500">Keep it short for the wheel display</small>
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2">Image URL (optional)</label>
+            <label className="block text-gray-300 mb-2">Prize Description (shown when won) *</label>
             <input
-              type="url"
-              name="imageUrl"
+              type="text"
+              name="description"
+              required
               className="w-full bg-navy-900 border border-gold-500/30 rounded px-4 py-2 text-white focus:border-gold-500 focus:outline-none"
-              placeholder="https://example.com/image.jpg"
+              placeholder="e.g., Free Dessert of Your Choice"
             />
+            <small className="text-gray-500">Full description displayed on win screen</small>
+          </div>
+
+          <div>
+            <label className="block text-gray-300 mb-2">Prize Image (optional)</label>
+            
+            {/* Image preview */}
+            {imageUrl && (
+              <div className="mb-4">
+                <img
+                  src={imageUrl}
+                  alt="Preview"
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-gold-500/30"
+                />
+              </div>
+            )}
+            
+            {/* Upload button */}
+            <label className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors cursor-pointer mb-2">
+              {isUploadingImage ? 'Uploading...' : '📤 Upload Image'}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                disabled={isUploadingImage}
+                className="hidden"
+              />
+            </label>
+            
+            <span className="text-gray-500 text-sm ml-4">or</span>
+            
+            {/* URL input */}
+            <input
+              type="text"
+              name="imageUrl"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              className="w-full mt-2 bg-navy-900 border border-gold-500/30 rounded px-4 py-2 text-white focus:border-gold-500 focus:outline-none"
+              placeholder="Paste image URL here"
+            />
+            <small className="text-gray-500">Upload a file or paste an image URL</small>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -164,10 +242,11 @@ export default function PrizeManagement() {
                 name="weight"
                 required
                 min="1"
+                defaultValue="30"
                 className="w-full bg-navy-900 border border-gold-500/30 rounded px-4 py-2 text-white focus:border-gold-500 focus:outline-none"
                 placeholder="30"
               />
-              <small className="text-gray-500">Higher = More likely to win</small>
+              <small className="text-gray-500">Higher = More likely to win (default: 30)</small>
             </div>
           </div>
 

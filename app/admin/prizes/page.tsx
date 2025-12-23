@@ -40,12 +40,7 @@ export default async function AdminPrizesPage() {
           {prizes.length === 0 ? (
             <div className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-12 text-center">
               <p className="text-gray-400 text-lg mb-4">No prizes yet</p>
-              <a
-                href="/admin/prizes/new"
-                className="inline-block bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-2 px-6 rounded-lg transition-colors"
-              >
-                Add Your First Prize
-              </a>
+              <p className="text-gray-500">Use the form above to add your first prize</p>
             </div>
           ) : (
             prizes.map((prize) => (

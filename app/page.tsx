@@ -49,7 +49,14 @@ export default function HomePage() {
 
   // Load recent winners on mount
   useEffect(() => {
-    fetch('/api/last-winner')
+    fetch('/api/last-winner', {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
       .then(res => res.json())
       .then(data => {
         if (data.winners) {
@@ -131,11 +138,11 @@ export default function HomePage() {
     <main className="min-h-screen flex flex-col items-center justify-center p-8">
       {/* Header */}
       <div className="text-center mb-12">
-        <h1 className="text-6xl md:text-7xl font-serif font-bold text-gold-300 mb-2 text-glow tracking-wide animate-fade-in-up">
+        <h1 className="text-6xl md:text-7xl font-bold text-gold-300 mb-2 elegant-heading animate-fade-in-up">
           ATERES KALLAH
         </h1>
-        <h2 className="text-3xl md:text-4xl text-gold-400 font-light italic mb-4 tracking-wider animate-fade-in-up animation-delay-200">
-          Spin to Win
+        <h2 className="text-3xl md:text-4xl text-gold-300 mb-4 elegant-subtitle animate-fade-in-up animation-delay-200">
+          Spin <span className="fancy-number">2</span> Win
         </h2>
         <p className="mt-4 text-gray-200 max-w-2xl mx-auto text-lg leading-relaxed animate-fade-in-up animation-delay-400">
           Enter your one-time code below to spin the prize wheel and win your exclusive prize.

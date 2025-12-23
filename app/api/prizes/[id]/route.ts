@@ -19,6 +19,7 @@ export async function GET(
       select: {
         id: true,
         title: true,
+        description: true,
         imageUrl: true,
         // Do not expose inventory or weight
       },
@@ -56,10 +57,10 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { title, imageUrl, quantityTotal, weight } = body
+    const { title, description, imageUrl, quantityTotal, weight } = body
 
     // Validate required fields
-    if (!title || !quantityTotal || !weight) {
+    if (!title || !description || !quantityTotal || !weight) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -87,6 +88,7 @@ export async function PUT(
       where: { id: params.id },
       data: {
         title,
+        description,
         imageUrl: imageUrl || null,
         quantityTotal,
         quantityRemaining: newQuantityRemaining,
