@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
+import { put } from '@vercel/blob'
 
 /**
  * GET /api/admin/sponsors
@@ -63,21 +62,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create sponsors directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'sponsors')
-    await mkdir(uploadsDir, { recursive: true })
-
-    // Generate unique filename
+    // Upload to Vercel Blob
     const timestamp = Date.now()
-    const filename = `sponsor-${timestamp}${path.extname(file.name)}`
-    const filepath = path.join(uploadsDir, filename)
-
-    // Save file
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
-
-    const logoUrl = `/sponsors/${filename}`
+    const filename = `sponsors/sponsor-${timestamp}-${file.name}`
+    
+    const blob = await put(filename, file, {
+      access: 'public',
+    })
 
     // Get the max order value to add new sponsor at the end
     const maxOrder = await prisma.sponsorLogo.findFirst({
@@ -91,7 +82,7 @@ export async function POST(request: NextRequest) {
     const sponsor = await prisma.sponsorLogo.create({
       data: {
         name,
-        logoUrl,
+        logoUrl: blob.url,
         linkUrl: linkUrl || null,
         order: newOrder,
         isActive: true

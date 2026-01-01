@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
+import { put } from '@vercel/blob'
 
 /**
  * GET /api/admin/advertisements
@@ -59,28 +58,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create advertisements directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'advertisements')
-    await mkdir(uploadsDir, { recursive: true })
-
-    // Generate unique filename
+    // Upload to Vercel Blob
     const timestamp = Date.now()
-    const filename = `ad-${timestamp}${path.extname(file.name)}`
-    const filepath = path.join(uploadsDir, filename)
+    const filename = `advertisements/ad-${timestamp}-${file.name}`
+    
+    const blob = await put(filename, file, {
+      access: 'public',
+    })
 
-    // Save file
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-    await writeFile(filepath, buffer)
-
-    const imageUrl = `/advertisements/${filename}`
-
-    console.log('Creating advertisement with imageUrl:', imageUrl)
+    console.log('Creating advertisement with imageUrl:', blob.url)
 
     // Create new advertisement (all ads can be active for carousel)
     const advertisement = await prisma.advertisement.create({
       data: {
-        imageUrl,
+        imageUrl: blob.url,
         linkUrl: linkUrl || null,
         isActive: true
       }
