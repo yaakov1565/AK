@@ -82,7 +82,7 @@ export default async function AdminPage() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <a
             href="/admin/prizes"
             className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-8 hover:border-gold-500 transition-all duration-200 transform hover:scale-105"
@@ -116,6 +116,18 @@ export default async function AdminPage() {
             </h2>
             <p className="text-gray-300">
               View winners log and export to CSV
+            </p>
+          </a>
+
+          <a
+            href="/admin/bottom-content"
+            className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-8 hover:border-gold-500 transition-all duration-200 transform hover:scale-105"
+          >
+            <h2 className="text-2xl font-bold text-gold-400 mb-2">
+              📢 Bottom Content
+            </h2>
+            <p className="text-gray-300">
+              Manage ads and sponsor logos
             </p>
           </a>
         </div>

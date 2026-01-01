@@ -70,3 +70,35 @@ model RateLimit {
   
   @@index([identifier, lastAttempt])
 }
+
+// BottomContent model - stores what type of content to display at the bottom
+model BottomContent {
+  id          String   @id @default(cuid())
+  displayType String   @default("NONE") // "NONE", "ADVERTISEMENT", or "SPONSOR_LOGOS"
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+}
+
+// Advertisement model - stores banner advertisement
+model Advertisement {
+  id        String   @id @default(cuid())
+  imageUrl  String   // Banner image URL
+  linkUrl   String?  // Optional clickable URL
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// SponsorLogo model - stores sponsor logos for carousel
+model SponsorLogo {
+  id        String   @id @default(cuid())
+  name      String   // Sponsor name
+  logoUrl   String   // Logo image URL
+  linkUrl   String?  // Optional clickable URL
+  order     Int      @default(0) // Display order
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([order, isActive])
+}

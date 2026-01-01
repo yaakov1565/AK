@@ -14,6 +14,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import PrizeWheel from '@/components/PrizeWheel'
 import WinnersTicker from '@/components/WinnersTicker'
+import BottomContent from '@/components/BottomContent'
 
 interface Prize {
   id: string
@@ -181,6 +182,7 @@ export default function HomePage() {
               disabled={isLoading}
               className="w-full px-4 py-3 bg-navy-900/60 backdrop-blur-sm border border-gold-400/60 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold-400 focus:border-transparent disabled:opacity-50 uppercase text-lg"
             />
+            <p className="mt-2 text-gray-300 text-sm">Each code can only be used once</p>
             {error && (
               <p className="mt-3 text-red-400 text-sm">{error}</p>
             )}
@@ -213,10 +215,12 @@ export default function HomePage() {
         </div>
       )}
 
+      {/* Bottom Content - Advertisement or Sponsor Logos */}
+      <BottomContent />
+
       {/* Footer */}
-      <div className="mt-16 text-center text-gray-300 text-sm">
-        <p>Each code can only be used once</p>
-        <p className="mt-2 text-xs text-gray-400">Created by YSLG INC</p>
+      <div className="mt-8 text-center text-gray-300 text-sm">
+        <p className="text-xs text-gray-400">Created by YSLG INC</p>
       </div>
     </main>
   )
