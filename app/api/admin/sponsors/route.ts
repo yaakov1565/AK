@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
-import { put } from '@vercel/blob'
 
 /**
  * GET /api/admin/sponsors
@@ -62,13 +61,11 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Upload to Vercel Blob
-    const timestamp = Date.now()
-    const filename = `sponsors/sponsor-${timestamp}-${file.name}`
-    
-    const blob = await put(filename, file, {
-      access: 'public',
-    })
+    // Convert to base64 data URL
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const base64 = buffer.toString('base64')
+    const dataUrl = `data:${file.type};base64,${base64}`
 
     // Get the max order value to add new sponsor at the end
     const maxOrder = await prisma.sponsorLogo.findFirst({
@@ -82,7 +79,7 @@ export async function POST(request: NextRequest) {
     const sponsor = await prisma.sponsorLogo.create({
       data: {
         name,
-        logoUrl: blob.url,
+        logoUrl: dataUrl,
         linkUrl: linkUrl || null,
         order: newOrder,
         isActive: true

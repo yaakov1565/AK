@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { put } from '@vercel/blob'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -8,6 +7,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'ima
 /**
  * API Route: Upload Image
  * POST /api/upload
+ * Converts image to base64 data URL for database storage
  */
 export async function POST(request: NextRequest) {
   try {
@@ -38,18 +38,15 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Upload to Vercel Blob
-    const timestamp = Date.now()
-    const randomString = Math.random().toString(36).substring(2, 15)
-    const filename = `uploads/${timestamp}-${randomString}-${file.name}`
-    
-    const blob = await put(filename, file, {
-      access: 'public',
-    })
+    // Convert to base64 data URL
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const base64 = buffer.toString('base64')
+    const dataUrl = `data:${file.type};base64,${base64}`
 
     return NextResponse.json({
       success: true,
-      url: blob.url
+      url: dataUrl
     })
 
   } catch (error) {

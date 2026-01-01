@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
-import { put } from '@vercel/blob'
 
 /**
  * GET /api/admin/advertisements
@@ -58,26 +57,24 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Upload to Vercel Blob
-    const timestamp = Date.now()
-    const filename = `advertisements/ad-${timestamp}-${file.name}`
-    
-    const blob = await put(filename, file, {
-      access: 'public',
-    })
+    // Convert to base64 data URL
+    const bytes = await file.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+    const base64 = buffer.toString('base64')
+    const dataUrl = `data:${file.type};base64,${base64}`
 
-    console.log('Creating advertisement with imageUrl:', blob.url)
+    console.log('Creating advertisement with base64 imageUrl')
 
     // Create new advertisement (all ads can be active for carousel)
     const advertisement = await prisma.advertisement.create({
       data: {
-        imageUrl: blob.url,
+        imageUrl: dataUrl,
         linkUrl: linkUrl || null,
         isActive: true
       }
     })
 
-    console.log('Advertisement created successfully:', advertisement)
+    console.log('Advertisement created successfully:', advertisement.id)
     return NextResponse.json(advertisement)
   } catch (error: any) {
     console.error('Failed to create advertisement:', error)
