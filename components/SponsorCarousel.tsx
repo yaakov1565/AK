@@ -73,13 +73,11 @@ export default function SponsorCarousel({ sponsors }: SponsorCarouselProps) {
 function LogoContainer({ sponsor }: { sponsor: Sponsor }) {
   return (
     <div className="w-28 h-28 rounded-full bg-white/95 flex items-center justify-center p-4 shadow-lg border-2 border-gold-400/30">
-      <div className="relative w-full h-full">
-        <Image
+      <div className="relative w-full h-full flex items-center justify-center">
+        <img
           src={sponsor.logoUrl}
           alt={sponsor.name}
-          fill
-          className="object-contain"
-          sizes="112px"
+          className="max-w-full max-h-full object-contain"
         />
       </div>
     </div>

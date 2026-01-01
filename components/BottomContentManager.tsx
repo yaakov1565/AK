@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Image from 'next/image'
 
 type DisplayType = 'NONE' | 'ADVERTISEMENT' | 'SPONSOR_LOGOS'
 
@@ -314,11 +313,10 @@ export default function BottomContentManager() {
             <div key={ad.id} className="bg-navy-700 p-4 rounded-lg">
               <div className="flex flex-col gap-3">
                 <div className="relative w-full bg-navy-600 rounded overflow-hidden h-[250px] flex items-center justify-center">
-                  <Image
+                  <img
                     src={ad.imageUrl}
                     alt="Ad"
-                    fill
-                    className="object-contain rounded"
+                    className="max-w-full max-h-full object-contain rounded"
                   />
                 </div>
                 <div className="flex items-center justify-between">
@@ -406,7 +404,7 @@ export default function BottomContentManager() {
             <div key={sponsor.id} className="bg-navy-700 p-4 rounded-lg">
               <div className="flex flex-col items-center gap-3">
                 <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center p-2">
-                  <Image src={sponsor.logoUrl} alt={sponsor.name} width={80} height={80} className="object-contain" />
+                  <img src={sponsor.logoUrl} alt={sponsor.name} className="max-w-full max-h-full object-contain" />
                 </div>
                 <h3 className="text-white font-semibold">{sponsor.name}</h3>
                 {sponsor.linkUrl && (
