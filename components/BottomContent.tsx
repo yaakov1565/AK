@@ -14,16 +14,26 @@ export default function BottomContent() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/bottom-content')
-      .then(res => res.json())
-      .then(data => {
-        setData(data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error('Failed to load bottom content:', err)
-        setLoading(false)
-      })
+    const fetchData = () => {
+      fetch('/api/bottom-content')
+        .then(res => res.json())
+        .then(data => {
+          setData(data)
+          setLoading(false)
+        })
+        .catch(err => {
+          console.error('Failed to load bottom content:', err)
+          setLoading(false)
+        })
+    }
+
+    // Initial fetch
+    fetchData()
+
+    // Poll for updates every 10 seconds
+    const interval = setInterval(fetchData, 10000)
+
+    return () => clearInterval(interval)
   }, [])
 
   if (loading || !data || data.displayType === 'NONE' || !data.content) {
