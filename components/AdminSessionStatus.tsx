@@ -45,28 +45,6 @@ export default function AdminSessionStatus() {
     return () => clearInterval(interval)
   }, [router])
 
-  // Auto-logout when page becomes hidden (user leaves page/tab)
-  useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (document.hidden) {
-        // User left the page, trigger logout
-        try {
-          await fetch('/api/admin/logout', { method: 'POST' })
-          // Redirect to login page
-          router.push('/admin/login')
-        } catch (error) {
-          console.error('Auto-logout error:', error)
-        }
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [router])
-
   if (timeRemaining === null) return null
 
   const hours = Math.floor(timeRemaining / 60)
