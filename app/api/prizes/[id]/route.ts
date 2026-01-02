@@ -11,12 +11,11 @@ import { isAdminAuthenticated } from '@/lib/admin-auth'
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = await params
     const prize = await prisma.prize.findUnique({
-      where: { id },
+      where: { id: params.id },
       select: {
         id: true,
         title: true,
@@ -45,7 +44,7 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin authentication
@@ -68,10 +67,9 @@ export async function PUT(
       )
     }
 
-    const { id } = await params
     // Check if prize exists
     const existingPrize = await prisma.prize.findUnique({
-      where: { id }
+      where: { id: params.id }
     })
 
     if (!existingPrize) {
@@ -87,7 +85,7 @@ export async function PUT(
 
     // Update the prize
     const updatedPrize = await prisma.prize.update({
-      where: { id },
+      where: { id: params.id },
       data: {
         title,
         description,
@@ -110,7 +108,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     // Check admin authentication
@@ -122,10 +120,9 @@ export async function DELETE(
       )
     }
 
-    const { id } = await params
     // Check if prize exists
     const prize = await prisma.prize.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: {
         _count: {
           select: { winners: true }
@@ -150,7 +147,7 @@ export async function DELETE(
 
     // Delete the prize
     await prisma.prize.delete({
-      where: { id }
+      where: { id: params.id }
     })
 
     return NextResponse.json({ success: true })

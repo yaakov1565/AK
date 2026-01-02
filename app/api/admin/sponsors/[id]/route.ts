@@ -10,7 +10,7 @@ import path from 'path'
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const isAuthenticated = await isAdminAuthenticated()
   if (!isAuthenticated) {
@@ -19,7 +19,7 @@ export async function PUT(
 
   try {
     const { name, linkUrl, isActive, order } = await request.json()
-    const { id } = await params
+    const { id } = params
 
     const sponsor = await prisma.sponsorLogo.update({
       where: { id },
@@ -47,7 +47,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const isAuthenticated = await isAdminAuthenticated()
   if (!isAuthenticated) {
@@ -55,7 +55,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
 
     // Get sponsor to find logo file
     const sponsor = await prisma.sponsorLogo.findUnique({
