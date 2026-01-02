@@ -13,6 +13,7 @@ export default function PrizeManagement() {
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [imageUrl, setImageUrl] = useState('')
   const [message, setMessage] = useState('')
+  const [uploadErrors, setUploadErrors] = useState<string[]>([])
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -85,6 +86,7 @@ export default function PrizeManagement() {
 
     setIsUploading(true)
     setMessage('')
+    setUploadErrors([])
 
     const formData = new FormData()
     formData.append('file', file)
@@ -99,7 +101,10 @@ export default function PrizeManagement() {
 
       if (response.ok) {
         setMessage(`✓ ${result.message}`)
-        setTimeout(() => window.location.reload(), 1500)
+        if (result.errors && result.errors.length > 0) {
+          setUploadErrors(result.errors)
+        }
+        setTimeout(() => window.location.reload(), 2500)
       } else {
         setMessage(`✗ ${result.error || 'Failed to upload CSV'}`)
       }
@@ -145,11 +150,21 @@ export default function PrizeManagement() {
       {/* Message Display */}
       {message && (
         <div className={`p-4 rounded-lg ${
-          message.startsWith('✓') || message.includes('success') 
-            ? 'bg-green-900/50 text-green-300 border border-green-500' 
+          message.startsWith('✓') || message.includes('success')
+            ? 'bg-green-900/50 text-green-300 border border-green-500'
             : 'bg-red-900/50 text-red-300 border border-red-500'
         }`}>
-          {message}
+          <div>{message}</div>
+          {uploadErrors.length > 0 && (
+            <div className="mt-3 space-y-1">
+              <div className="font-semibold text-yellow-300">Upload warnings:</div>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                {uploadErrors.map((error, index) => (
+                  <li key={index} className="text-yellow-200">{error}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
 

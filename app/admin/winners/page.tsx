@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 import WinnerFulfillment from '@/components/WinnerFulfillment'
+import DeleteWinnerButton from '@/components/DeleteWinnerButton'
 
 /**
  * Admin Winners Page
@@ -79,6 +80,7 @@ export default async function AdminWinnersPage() {
                     <th className="text-left py-3 px-4 text-gold-400 font-semibold">Code Used</th>
                     <th className="text-left py-3 px-4 text-gold-400 font-semibold">Prize Won</th>
                     <th className="text-left py-3 px-4 text-gold-400 font-semibold">Fulfillment</th>
+                    <th className="text-left py-3 px-4 text-gold-400 font-semibold">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -108,6 +110,13 @@ export default async function AdminWinnersPage() {
                           winnerId={winner.id}
                           initialPrizeSent={winner.prizeSent}
                           initialNotes={winner.notes}
+                        />
+                      </td>
+                      <td className="py-3 px-4">
+                        <DeleteWinnerButton
+                          winnerId={winner.id}
+                          prizeName={winner.prize.title}
+                          userName={winner.code.name || winner.code.email || 'Unknown'}
                         />
                       </td>
                     </tr>

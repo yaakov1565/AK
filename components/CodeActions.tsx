@@ -54,8 +54,19 @@ export default function CodeActions({ codeId, codeValue, name, email, isUsed }: 
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete code "${codeValue}"?`)) {
+    // First confirmation
+    if (!confirm(`Are you sure you want to delete code "${codeValue}"?${isUsed ? '\n\n⚠️ WARNING: This code has been USED!' : ''}`)) {
       return
+    }
+
+    // Second confirmation for used codes
+    if (isUsed) {
+      const confirmText = 'DELETE'
+      const userInput = prompt(`This code has been used! This action cannot be undone.\n\nType "${confirmText}" to confirm deletion:`)
+      if (userInput !== confirmText) {
+        alert('Deletion cancelled.')
+        return
+      }
     }
 
     try {
@@ -126,14 +137,13 @@ export default function CodeActions({ codeId, codeValue, name, email, isUsed }: 
       >
         Edit
       </button>
-      {!isUsed && (
-        <button
-          onClick={handleDelete}
-          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm transition-colors"
-        >
-          Delete
-        </button>
-      )}
+      <button
+        onClick={handleDelete}
+        className={`${isUsed ? 'bg-orange-600 hover:bg-orange-700' : 'bg-red-600 hover:bg-red-700'} text-white px-3 py-1 rounded text-sm transition-colors`}
+        title={isUsed ? 'Delete used code (requires double confirmation)' : 'Delete code'}
+      >
+        Delete
+      </button>
     </div>
   )
 }

@@ -8,6 +8,42 @@ const MAX_ROWS = 1000
 const ALLOWED_MIME_TYPES = ['text/csv', 'application/csv', 'text/plain']
 
 /**
+ * Parse a CSV line properly handling quoted fields and special characters
+ */
+function parseCSVLine(line: string): string[] {
+  const result: string[] = []
+  let current = ''
+  let inQuotes = false
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i]
+    const nextChar = line[i + 1]
+    
+    if (char === '"') {
+      if (inQuotes && nextChar === '"') {
+        // Escaped quote
+        current += '"'
+        i++ // Skip next quote
+      } else {
+        // Toggle quote mode
+        inQuotes = !inQuotes
+      }
+    } else if (char === ',' && !inQuotes) {
+      // End of field
+      result.push(current.trim())
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  
+  // Add last field
+  result.push(current.trim())
+  
+  return result
+}
+
+/**
  * Sanitize CSV value to prevent CSV injection
  */
 function sanitizeCSVValue(value: string): string {
@@ -67,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse header
-    const headers = lines[0].split(',').map(h => h.trim())
+    const headers = parseCSVLine(lines[0])
     
     // Validate headers
     const requiredHeaders = ['title', 'description', 'quantityTotal', 'weight']
@@ -81,39 +117,61 @@ export async function POST(request: NextRequest) {
 
     // Parse prizes
     const prizes = []
+    const errors: string[] = []
+    
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim())
-      
-      if (values.length !== headers.length) {
-        continue // Skip malformed rows
+      try {
+        const values = parseCSVLine(lines[i])
+        
+        if (values.length !== headers.length) {
+          errors.push(`Row ${i + 1}: Column count mismatch (expected ${headers.length}, got ${values.length})`)
+          continue
+        }
+
+        const prize: any = {}
+        headers.forEach((header, index) => {
+          prize[header] = values[index]
+        })
+
+        // Validate and convert types
+        const quantityTotal = parseInt(prize.quantityTotal)
+        const weight = parseInt(prize.weight)
+        
+        if (!prize.title || !prize.description) {
+          errors.push(`Row ${i + 1}: Missing required fields (title or description)`)
+          continue
+        }
+        
+        if (isNaN(quantityTotal) || quantityTotal < 1) {
+          errors.push(`Row ${i + 1}: Invalid quantity for "${prize.title}"`)
+          continue
+        }
+        
+        if (isNaN(weight) || weight < 1) {
+          errors.push(`Row ${i + 1}: Invalid weight for "${prize.title}"`)
+          continue
+        }
+
+        prizes.push({
+          title: sanitizeCSVValue(prize.title),
+          description: sanitizeCSVValue(prize.description),
+          imageUrl: prize.imageUrl || null,
+          quantityTotal,
+          quantityRemaining: quantityTotal,
+          weight,
+        })
+      } catch (error) {
+        errors.push(`Row ${i + 1}: Parse error`)
       }
-
-      const prize: any = {}
-      headers.forEach((header, index) => {
-        prize[header] = values[index]
-      })
-
-      // Validate and convert types
-      const quantityTotal = parseInt(prize.quantityTotal)
-      const weight = parseInt(prize.weight)
-      
-      if (!prize.title || !prize.description || isNaN(quantityTotal) || isNaN(weight)) {
-        continue // Skip invalid rows
-      }
-
-      prizes.push({
-        title: sanitizeCSVValue(prize.title),
-        description: sanitizeCSVValue(prize.description),
-        imageUrl: prize.imageUrl || null,
-        quantityTotal,
-        quantityRemaining: quantityTotal,
-        weight,
-      })
     }
 
     if (prizes.length === 0) {
-      return NextResponse.json({ 
-        error: 'No valid prizes found in CSV' 
+      const errorMsg = errors.length > 0
+        ? `No valid prizes found. Errors: ${errors.slice(0, 5).join('; ')}${errors.length > 5 ? ` (and ${errors.length - 5} more)` : ''}`
+        : 'No valid prizes found in CSV'
+      
+      return NextResponse.json({
+        error: errorMsg
       }, { status: 400 })
     }
 
@@ -122,10 +180,16 @@ export async function POST(request: NextRequest) {
       data: prizes,
     })
 
-    return NextResponse.json({ 
-      success: true, 
+    const message = errors.length > 0
+      ? `Successfully imported ${result.count} prizes. ${errors.length} rows skipped due to errors.`
+      : `Successfully imported ${result.count} prizes`
+
+    return NextResponse.json({
+      success: true,
       count: result.count,
-      message: `Successfully imported ${result.count} prizes`
+      skipped: errors.length,
+      errors: errors.slice(0, 10), // Return first 10 errors
+      message
     })
 
   } catch (error) {
