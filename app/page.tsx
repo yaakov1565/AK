@@ -48,8 +48,8 @@ export default function HomePage() {
       .catch(err => console.error('Failed to load prizes:', err))
   }, [])
 
-  // Load recent winners on mount
-  useEffect(() => {
+  // Function to fetch recent winners
+  const fetchWinners = () => {
     fetch('/api/last-winner', {
       cache: 'no-store',
       headers: {
@@ -65,6 +65,32 @@ export default function HomePage() {
         }
       })
       .catch(err => console.error('Failed to load recent winners:', err))
+  }
+
+  // Load recent winners on mount
+  useEffect(() => {
+    fetchWinners()
+  }, [])
+
+  // Refresh winners every 10 seconds to show latest winners
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchWinners()
+    }, 10000) // 10 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Refresh winners when page becomes visible again
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        fetchWinners()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [])
 
   // Handle code validation
