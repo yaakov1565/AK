@@ -15,10 +15,17 @@ export default function BottomContent() {
 
   useEffect(() => {
     const fetchData = () => {
-      fetch('/api/bottom-content')
+      // Add cache-busting timestamp to ensure fresh data
+      fetch(`/api/bottom-content?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache',
+        }
+      })
         .then(res => res.json())
-        .then(data => {
-          setData(data)
+        .then(newData => {
+          console.log('Bottom content fetched:', newData) // Debug log
+          setData(newData)
           setLoading(false)
         })
         .catch(err => {
