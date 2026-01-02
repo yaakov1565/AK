@@ -22,6 +22,13 @@ export default function WinnersTicker({ winners }: WinnersTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isSliding, setIsSliding] = useState(false)
 
+  // Reset index when winners list changes to avoid out-of-bounds
+  useEffect(() => {
+    if (currentIndex >= winners.length && winners.length > 0) {
+      setCurrentIndex(0)
+    }
+  }, [winners.length, currentIndex])
+
   useEffect(() => {
     if (winners.length === 0) return
 
@@ -29,7 +36,11 @@ export default function WinnersTicker({ winners }: WinnersTickerProps) {
       setIsSliding(true)
       
       setTimeout(() => {
-        setCurrentIndex((prev) => (prev + 1) % winners.length)
+        setCurrentIndex((prev) => {
+          // Ensure we don't go out of bounds if winners list changed
+          const nextIndex = (prev + 1) % winners.length
+          return nextIndex
+        })
         setIsSliding(false)
       }, 500)
     }, 4000)

@@ -27,10 +27,15 @@ export async function GET() {
       }
     })
 
-    const response = recentWinners.length === 0
+    // Filter out any winners with null/deleted prize or code references
+    const validWinners = recentWinners.filter((winner: any) => {
+      return winner.prize && winner.code && winner.prize.title && winner.code.name
+    })
+
+    const response = validWinners.length === 0
       ? NextResponse.json({ winners: [] })
       : NextResponse.json({
-          winners: recentWinners.map((winner: any) => ({
+          winners: validWinners.map((winner: any) => ({
             name: winner.code.name || 'Anonymous',
             prizeName: winner.prize.title,
             prizeImage: winner.prize.imageUrl,
@@ -38,7 +43,7 @@ export async function GET() {
           }))
         })
 
-    // Disable caching to ensure fresh data after resets
+    // Disable caching to ensure fresh data after resets and deletions
     response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')

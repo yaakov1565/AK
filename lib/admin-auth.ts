@@ -11,9 +11,15 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-this-in-production'
 const SESSION_TIMEOUT_HOURS = 4 // Session expires after 4 hours
 const ENCRYPTION_KEY = process.env.SESSION_SECRET || 'change-this-secret-key-in-production'
 
+// Create a hash of the password to validate sessions
+function getPasswordHash(): string {
+  return crypto.createHash('sha256').update(ADMIN_PASSWORD).digest('hex')
+}
+
 interface SessionData {
   authenticated: boolean
   timestamp: number
+  passwordHash: string // Hash of password at session creation time
 }
 
 /**
@@ -51,7 +57,7 @@ function decrypt(encryptedData: string): SessionData | null {
 
 /**
  * Check if the current user is authenticated as admin
- * Validates session exists and hasn't expired
+ * Validates session exists, hasn't expired, and password hasn't changed
  */
 export async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies()
@@ -67,13 +73,21 @@ export async function isAdminAuthenticated(): Promise<boolean> {
     return false
   }
 
+  // Check if password has changed since session was created
+  const currentPasswordHash = getPasswordHash()
+  if (sessionData.passwordHash !== currentPasswordHash) {
+    // Password changed, session is invalid
+    // Note: Session will be cleared on next login or logout
+    return false
+  }
+
   // Check if session has expired
   const sessionAge = Date.now() - sessionData.timestamp
   const maxAge = SESSION_TIMEOUT_HOURS * 60 * 60 * 1000 // Convert hours to milliseconds
   
   if (sessionAge > maxAge) {
-    // Session expired, clear it
-    await clearAdminSession()
+    // Session expired
+    // Note: Session will be cleared on next login or logout
     return false
   }
 
@@ -94,6 +108,7 @@ export async function setAdminSession() {
   const sessionData: SessionData = {
     authenticated: true,
     timestamp: Date.now(),
+    passwordHash: getPasswordHash(), // Store password hash for validation
   }
   
   const encryptedSession = encrypt(sessionData)
