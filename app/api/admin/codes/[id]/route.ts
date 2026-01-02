@@ -11,7 +11,7 @@ import { isAdminAuthenticated } from '@/lib/admin-auth'
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const isAuthenticated = await isAdminAuthenticated()
@@ -25,9 +25,10 @@ export async function PUT(
     const body = await request.json()
     const { name, email } = body
 
+    const { id } = await params
     // Check if code exists
     const code = await prisma.spinCode.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!code) {
@@ -39,7 +40,7 @@ export async function PUT(
 
     // Update the code
     const updatedCode = await prisma.spinCode.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: name || null,
         email: email || null
@@ -58,7 +59,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const isAuthenticated = await isAdminAuthenticated()
@@ -69,9 +70,10 @@ export async function DELETE(
       )
     }
 
+    const { id } = await params
     // Check if code exists
     const code = await prisma.spinCode.findUnique({
-      where: { id: params.id }
+      where: { id }
     })
 
     if (!code) {
@@ -91,7 +93,7 @@ export async function DELETE(
 
     // Delete the code
     await prisma.spinCode.delete({
-      where: { id: params.id }
+      where: { id }
     })
 
     return NextResponse.json({ success: true })

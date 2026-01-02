@@ -10,7 +10,7 @@ import path from 'path'
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const isAuthenticated = await isAdminAuthenticated()
   if (!isAuthenticated) {
@@ -19,7 +19,7 @@ export async function PUT(
 
   try {
     const { linkUrl, isActive } = await request.json()
-    const { id } = params
+    const { id } = await params
 
     const advertisement = await prisma.advertisement.update({
       where: { id },
@@ -45,7 +45,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const isAuthenticated = await isAdminAuthenticated()
   if (!isAuthenticated) {
@@ -53,7 +53,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = params
+    const { id } = await params
 
     // Get advertisement to find image file
     const advertisement = await prisma.advertisement.findUnique({

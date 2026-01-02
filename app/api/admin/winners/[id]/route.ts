@@ -10,7 +10,7 @@ import { prisma } from '@/lib/prisma'
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const isAuthenticated = await isAdminAuthenticated()
   
@@ -23,9 +23,10 @@ export async function PATCH(
 
   try {
     const { prizeSent, notes } = await request.json()
+    const { id } = await params
 
     const winner = await prisma.winner.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         prizeSent: prizeSent ?? undefined,
         notes: notes ?? undefined,
