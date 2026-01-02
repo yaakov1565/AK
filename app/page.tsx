@@ -50,7 +50,9 @@ export default function HomePage() {
 
   // Function to fetch recent winners
   const fetchWinners = () => {
-    fetch('/api/last-winner', {
+    // Add timestamp to force fresh data and bypass all caching
+    const url = `/api/last-winner?t=${Date.now()}`
+    fetch(url, {
       cache: 'no-store',
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
