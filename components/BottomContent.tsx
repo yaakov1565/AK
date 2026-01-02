@@ -30,8 +30,8 @@ export default function BottomContent() {
     // Initial fetch
     fetchData()
 
-    // Poll for updates every 10 seconds
-    const interval = setInterval(fetchData, 10000)
+    // Poll for updates every 5 seconds
+    const interval = setInterval(fetchData, 5000)
 
     return () => clearInterval(interval)
   }, [])

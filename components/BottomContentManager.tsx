@@ -75,15 +75,21 @@ export default function BottomContentManager() {
 
   const updateDisplayType = async (newType: DisplayType) => {
     try {
-      await fetch('/api/admin/bottom-content/settings', {
+      const response = await fetch('/api/admin/bottom-content/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ displayType: newType })
       })
-      setDisplayType(newType)
+      
+      if (response.ok) {
+        setDisplayType(newType)
+        alert(`✓ Display type updated to: ${newType === 'NONE' ? 'None' : newType === 'ADVERTISEMENT' ? 'Advertisement' : 'Sponsor Logos'}\n\nChanges will appear on the main page within 5 seconds.`)
+      } else {
+        throw new Error('Failed to update')
+      }
     } catch (error) {
       console.error('Failed to update display type:', error)
-      alert('Failed to update display type')
+      alert('✗ Failed to update display type. Please try again.')
     }
   }
 
