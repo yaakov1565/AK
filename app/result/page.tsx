@@ -9,6 +9,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import confetti from 'canvas-confetti'
 import SoundEffects from '@/lib/sound-effects'
+import WinnersTicker from '@/components/WinnersTicker'
 
 interface Prize {
   id: string
@@ -17,12 +18,40 @@ interface Prize {
   imageUrl: string | null
 }
 
+interface Winner {
+  name: string
+  prizeName: string
+  prizeImage: string | null
+  wonAt: string
+}
+
 function ResultContent() {
   const searchParams = useSearchParams()
   const prizeId = searchParams.get('prize')
   const [prize, setPrize] = useState<Prize | null>(null)
   const [loading, setLoading] = useState(true)
   const [soundEffects] = useState(() => new SoundEffects())
+  const [winners, setWinners] = useState<Winner[]>([])
+
+  // Function to fetch recent winners
+  const fetchWinners = () => {
+    const url = `/api/last-winner?t=${Date.now()}`
+    fetch(url, {
+      cache: 'no-store',
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.winners) {
+          setWinners(data.winners)
+        }
+      })
+      .catch(err => console.error('Failed to load recent winners:', err))
+  }
 
   useEffect(() => {
     if (!prizeId) return
@@ -37,6 +66,9 @@ function ResultContent() {
         // Fire confetti and play clapping sound immediately when prize data is loaded
         triggerConfetti()
         soundEffects.playClappingSound()
+        
+        // Fetch winners to show the latest including this win
+        fetchWinners()
       })
       .catch(err => {
         console.error('Failed to load prize:', err)
@@ -118,6 +150,13 @@ function ResultContent() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center p-8">
+      {/* Winners Ticker at the top */}
+      {winners.length > 0 && (
+        <div className="mb-8 w-full flex justify-center">
+          <WinnersTicker winners={winners} />
+        </div>
+      )}
+      
       <div className="max-w-2xl w-full text-center">
         {/* Success Header */}
         <div className="mb-8 animate-[fadeInUp_0.6s_ease-out]">
