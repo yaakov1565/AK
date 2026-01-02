@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Disable all forms of caching for this route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * GET /api/last-winner
  * Fetch recent winners with prize details (limit 10)
@@ -33,24 +37,26 @@ export async function GET() {
     })
 
     const response = validWinners.length === 0
-      ? NextResponse.json({ winners: [] })
+      ? NextResponse.json({ winners: [], timestamp: Date.now() })
       : NextResponse.json({
           winners: validWinners.map((winner: any) => ({
             name: winner.code.name || 'Anonymous',
             prizeName: winner.prize.title,
             prizeImage: winner.prize.imageUrl,
             wonAt: winner.wonAt
-          }))
+          })),
+          timestamp: Date.now()
         })
 
-    // Disable caching to ensure fresh data after resets and deletions
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+    // Aggressive cache prevention
+    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
     response.headers.set('Pragma', 'no-cache')
     response.headers.set('Expires', '0')
+    response.headers.set('Surrogate-Control', 'no-store')
     
     return response
   } catch (error) {
     console.error('Failed to fetch recent winners:', error)
-    return NextResponse.json({ winners: [] })
+    return NextResponse.json({ winners: [], timestamp: Date.now() })
   }
 }
