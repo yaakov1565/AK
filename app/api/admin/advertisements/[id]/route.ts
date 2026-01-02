@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 import { unlink } from 'fs/promises'
@@ -28,6 +29,10 @@ export async function PUT(
         isActive: isActive ?? undefined
       }
     })
+
+    // Revalidate to show updated content
+    revalidatePath('/api/bottom-content')
+    revalidatePath('/')
 
     return NextResponse.json(advertisement)
   } catch (error) {
@@ -79,6 +84,10 @@ export async function DELETE(
     } catch (fileError) {
       console.warn('Failed to delete image file:', fileError)
     }
+
+    // Revalidate to show updated content
+    revalidatePath('/api/bottom-content')
+    revalidatePath('/')
 
     return NextResponse.json({ success: true })
   } catch (error) {

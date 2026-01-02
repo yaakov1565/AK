@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 
@@ -68,6 +69,10 @@ export async function PUT(request: NextRequest) {
         data: { displayType }
       })
     }
+
+    // Revalidate the bottom-content route to clear cache
+    revalidatePath('/api/bottom-content')
+    revalidatePath('/')
 
     return NextResponse.json(settings)
   } catch (error) {

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
+// Force dynamic rendering - don't cache this route
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 /**
  * GET /api/bottom-content
  * Get the current bottom content settings and data

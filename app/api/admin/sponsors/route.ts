@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 
@@ -85,6 +86,10 @@ export async function POST(request: NextRequest) {
         isActive: true
       }
     })
+
+    // Revalidate to show new content
+    revalidatePath('/api/bottom-content')
+    revalidatePath('/')
 
     return NextResponse.json(sponsor)
   } catch (error) {

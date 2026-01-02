@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 
@@ -75,6 +76,11 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('Advertisement created successfully:', advertisement.id)
+    
+    // Revalidate the bottom-content route to show new content
+    revalidatePath('/api/bottom-content')
+    revalidatePath('/')
+    
     return NextResponse.json(advertisement)
   } catch (error: any) {
     console.error('Failed to create advertisement:', error)
