@@ -148,7 +148,7 @@ export default function PrizeWheel({
       const textAngle = startAngle + sliceAngle / 2
       ctx.rotate(textAngle)
       
-      // Set text style
+      // Set text style - keep font size consistent
       ctx.fillStyle = textColor
       ctx.font = 'bold 16px Arial'
       ctx.textAlign = 'right'
@@ -160,33 +160,28 @@ export default function PrizeWheel({
       ctx.shadowOffsetX = 2
       ctx.shadowOffsetY = 2
       
-      // Wrap text if needed
-      const words = prize.title.split(' ')
-      const maxWidth = radius * 0.35
-      let line = ''
-      const lines: string[] = []
+      // Position text closer to the edge
+      const textRadius = radius * 0.88
       
-      words.forEach((word) => {
-        const testLine = line + word + ' '
-        const metrics = ctx.measureText(testLine)
-        if (metrics.width > maxWidth && line !== '') {
-          lines.push(line.trim())
-          line = word + ' '
-        } else {
-          line = testLine
+      // Calculate max width based on slice angle to prevent text from spilling
+      // The available width narrows as we move toward the edge
+      const maxWidth = radius * 0.30
+      
+      // Try to fit text, truncating if necessary
+      let displayText = prize.title
+      let textWidth = ctx.measureText(displayText).width
+      
+      // If text is too wide, truncate with ellipsis
+      if (textWidth > maxWidth) {
+        while (displayText.length > 0 && textWidth > maxWidth) {
+          displayText = displayText.substring(0, displayText.length - 1)
+          textWidth = ctx.measureText(displayText + '...').width
         }
-      })
-      if (line.trim()) lines.push(line.trim())
+        displayText = displayText + '...'
+      }
       
-      // Draw text lines closer to the edge
-      const textRadius = radius * 0.85
-      const lineHeight = 20
-      const totalHeight = (lines.length - 1) * lineHeight
-      
-      lines.forEach((textLine, i) => {
-        const y = (i * lineHeight) - (totalHeight / 2)
-        ctx.fillText(textLine, textRadius, y)
-      })
+      // Draw the text at the calculated position
+      ctx.fillText(displayText, textRadius, 0)
       
       ctx.restore()
     })
