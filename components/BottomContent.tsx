@@ -14,33 +14,17 @@ export default function BottomContent() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchData = () => {
-      // Add cache-busting timestamp to ensure fresh data
-      fetch(`/api/bottom-content?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache',
-        }
+    // Fetch bottom content only once on mount (no polling)
+    fetch('/api/bottom-content')
+      .then(res => res.json())
+      .then(newData => {
+        setData(newData)
+        setLoading(false)
       })
-        .then(res => res.json())
-        .then(newData => {
-          console.log('Bottom content fetched:', newData) // Debug log
-          setData(newData)
-          setLoading(false)
-        })
-        .catch(err => {
-          console.error('Failed to load bottom content:', err)
-          setLoading(false)
-        })
-    }
-
-    // Initial fetch
-    fetchData()
-
-    // Poll for updates every 5 seconds
-    const interval = setInterval(fetchData, 5000)
-
-    return () => clearInterval(interval)
+      .catch(err => {
+        console.error('Failed to load bottom content:', err)
+        setLoading(false)
+      })
   }, [])
 
   if (loading || !data || data.displayType === 'NONE' || !data.content) {
