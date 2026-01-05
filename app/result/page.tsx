@@ -7,6 +7,7 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import confetti from 'canvas-confetti'
 import SoundEffects from '@/lib/sound-effects'
 import WinnersTicker from '@/components/WinnersTicker'
@@ -174,12 +175,18 @@ function ResultContent() {
         {/* Prize Display */}
         <div className="bg-navy-800/40 backdrop-blur-sm border-4 border-gold-400/60 rounded-2xl p-12 shadow-2xl mb-8 animate-[scaleIn_0.8s_ease-out_0.6s_both]">
           {prize.imageUrl && (
-            <div className="mb-6 animate-[fadeIn_0.8s_ease-out_0.8s_both]">
-              <img
-                src={prize.imageUrl}
-                alt={prize.description}
-                className="max-w-full max-h-64 mx-auto rounded-lg shadow-lg transform transition-transform hover:scale-105"
-              />
+            <div className="mb-6 animate-[fadeIn_0.8s_ease-out_0.8s_both] relative flex justify-center">
+              <div className="relative max-w-full max-h-64">
+                <Image
+                  src={prize.imageUrl}
+                  alt={prize.description}
+                  width={400}
+                  height={256}
+                  className="max-w-full max-h-64 object-contain rounded-lg shadow-lg transform transition-transform hover:scale-105"
+                  quality={90}
+                  priority
+                />
+              </div>
             </div>
           )}
           <h3 className="text-3xl md:text-4xl font-bold text-gold-300 mb-4 text-glow animate-[fadeIn_0.8s_ease-out_1s_both]">

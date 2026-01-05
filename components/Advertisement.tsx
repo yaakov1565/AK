@@ -20,7 +20,9 @@ export default function Advertisement({ ad }: AdvertisementProps) {
           width={1200}
           height={200}
           className="w-full h-auto max-h-[200px] object-contain"
+          quality={85}
           priority={false}
+          loading="lazy"
         />
       </div>
     </div>

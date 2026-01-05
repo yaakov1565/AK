@@ -6,6 +6,7 @@
  */
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface Winner {
   name: string
@@ -79,11 +80,17 @@ export default function WinnersTicker({ winners }: WinnersTickerProps) {
               {currentWinner.prizeImage && (
                 <div className="flex-shrink-0 relative group">
                   <div className="absolute inset-0 bg-gold-400/20 rounded-xl blur-xl group-hover:blur-2xl transition-all"></div>
-                  <img
-                    src={currentWinner.prizeImage}
-                    alt={currentWinner.prizeName}
-                    className="relative w-24 h-24 object-cover rounded-xl border-2 border-gold-400/60 shadow-2xl transform group-hover:scale-105 transition-transform"
-                  />
+                  <div className="relative w-24 h-24">
+                    <Image
+                      src={currentWinner.prizeImage}
+                      alt={currentWinner.prizeName}
+                      width={96}
+                      height={96}
+                      className="object-cover rounded-xl border-2 border-gold-400/60 shadow-2xl transform group-hover:scale-105 transition-transform"
+                      quality={85}
+                      loading="lazy"
+                    />
+                  </div>
                 </div>
               )}
               

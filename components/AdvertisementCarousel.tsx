@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 
 interface Advertisement {
   id: string
@@ -71,10 +72,14 @@ export default function AdvertisementCarousel({ ads }: AdvertisementCarouselProp
   const AdContainer = ({ ad, isVisible }: { ad: Advertisement; isVisible: boolean }) => (
     <div className={`absolute inset-0 transition-opacity duration-600 ease-in-out ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
       <div className="relative w-full h-full">
-        <img
+        <Image
           src={ad.imageUrl}
           alt="Advertisement"
-          className="w-full h-full object-cover"
+          fill
+          sizes="(max-width: 1536px) 100vw, 1536px"
+          className="object-cover"
+          quality={85}
+          priority={isVisible}
         />
       </div>
     </div>

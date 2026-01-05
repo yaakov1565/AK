@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Image from 'next/image'
 import DeletePrizeButton from './DeletePrizeButton'
 
 interface Prize {
@@ -177,11 +178,17 @@ export default function PrizesList({ initialPrizes }: PrizesListProps) {
               className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-6 flex items-center gap-6"
             >
               {prize.imageUrl && (
-                <img
-                  src={prize.imageUrl}
-                  alt={prize.title}
-                  className="w-24 h-24 object-cover rounded-lg"
-                />
+                <div className="relative w-24 h-24 flex-shrink-0">
+                  <Image
+                    src={prize.imageUrl}
+                    alt={prize.title}
+                    width={96}
+                    height={96}
+                    className="object-cover rounded-lg"
+                    quality={85}
+                    loading="lazy"
+                  />
+                </div>
               )}
               <div className="flex-1">
                 <h3 className="text-xl font-bold text-gold-400 mb-2">
