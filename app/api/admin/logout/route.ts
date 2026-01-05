@@ -14,7 +14,7 @@ export async function POST(request: Request) {
   const origin = request.headers.get('origin')
   const referer = request.headers.get('referer')
   
-  let baseUrl = 'http://localhost:3000'
+  let baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spin2win-ak.org'
   
   if (origin) {
     baseUrl = origin
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       const url = new URL(referer)
       baseUrl = url.origin
     } catch {
-      baseUrl = 'http://localhost:3000'
+      baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spin2win-ak.org'
     }
   }
   
