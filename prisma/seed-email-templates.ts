@@ -160,7 +160,14 @@ const emailTemplates = [
       <p>Please visit our prize wheel page to use your code and claim your prize:</p>
       
       <p style="text-align: center;">
-        <a href="{{spin_url}}" class="button">CLAIM YOUR PRIZE</a>
+        <a href="{{spin_url}}?code={{spin_code}}" class="button">CLAIM YOUR PRIZE</a>
+      </p>
+      
+      <p style="text-align: center; margin-top: 15px;">
+        <button onclick="navigator.clipboard.writeText('{{spin_code}}'); this.textContent='Copied!';"
+                style="padding: 10px 25px; background-color: rgba(212, 175, 55, 0.2); color: #d4af37; border: 2px solid #d4af37; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Playfair Display', Georgia, serif; font-size: 14px;">
+          Copy Code
+        </button>
       </p>
       
       <p style="margin-top: 30px;">Thank you for your incredible support!</p>

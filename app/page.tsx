@@ -11,7 +11,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import PrizeWheel from '@/components/PrizeWheel'
 import WinnersTicker from '@/components/WinnersTicker'
 import BottomContent from '@/components/BottomContent'
@@ -31,6 +31,7 @@ interface Winner {
 
 export default function HomePage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [code, setCode] = useState('')
   const [prizes, setPrizes] = useState<Prize[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -39,6 +40,14 @@ export default function HomePage() {
   const [isSpinning, setIsSpinning] = useState(false)
   const [selectedPrizeId, setSelectedPrizeId] = useState<string | null>(null)
   const [winners, setWinners] = useState<Winner[]>([])
+
+  // Auto-fill code from URL parameter
+  useEffect(() => {
+    const codeParam = searchParams.get('code')
+    if (codeParam) {
+      setCode(codeParam.toUpperCase())
+    }
+  }, [searchParams])
 
   // Load prizes on mount
   useEffect(() => {
