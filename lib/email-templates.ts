@@ -166,6 +166,8 @@ export function getSampleVariables(type: string): TemplateVariables {
     app_name: 'Ateres Kallah',
     current_year: new Date().getFullYear()
   }
+  
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spin2win-ak.org'
 
   switch (type) {
     case 'CODE_CREATED':
@@ -175,7 +177,7 @@ export function getSampleVariables(type: string): TemplateVariables {
         customer_email: 'sarah@example.com',
         spin_code: 'AK-2026-ABC123',
         code_value: '$1,000',
-        spin_url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        spin_url: appUrl,
         expiry_date: 'December 31, 2026'
       }
     
@@ -188,7 +190,7 @@ export function getSampleVariables(type: string): TemplateVariables {
         winner_email: 'sarah@example.com',
         spin_code: 'AK-2026-ABC123',
        won_at: new Date().toLocaleString(),
-        admin_panel_url: `${process.env.NEXT_PUBLIC_APP_URL}/admin/winners`
+        admin_panel_url: `${appUrl}/admin/winners`
       }
     
     case 'WINNER_CONFIRMATION':

@@ -105,7 +105,7 @@ export async function sendWinNotification(data: WinNotification) {
                 </div>
                 <p>Please contact the winner to arrange prize delivery.</p>
                 <p style="margin-top: 20px;">
-                  <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/winners"
+                  <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://spin2win-ak.org'}/admin/winners"
                      style="display: inline-block; padding: 12px 24px; background-color: #d4af37; color: #0a1128; text-decoration: none; border-radius: 5px; font-weight: bold;">
                     View in Admin Panel
                   </a>
