@@ -7,6 +7,7 @@
 
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getCachedPrizeById, updatePrizeWithCache, deletePrizeWithCache } from '@/lib/cached-queries'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 
 export async function GET(
@@ -14,22 +15,22 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const prize = await prisma.prize.findUnique({
-      where: { id: params.id },
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        imageUrl: true,
-        // Do not expose inventory or weight
-      },
-    })
-
-    if (!prize) {
+    const prizeData = await getCachedPrizeById(params.id)
+    
+    if (!prizeData) {
       return NextResponse.json(
         { error: 'Prize not found' },
         { status: 404 }
       )
+    }
+    
+    // Only expose public fields
+    const prize = {
+      id: prizeData.id,
+      title: prizeData.title,
+      description: prizeData.description,
+      imageUrl: prizeData.imageUrl,
+      // Do not expose inventory or weight
     }
 
     return NextResponse.json(prize)
@@ -84,16 +85,13 @@ export async function PUT(
     const newQuantityRemaining = Math.max(0, existingPrize.quantityRemaining + quantityDifference)
 
     // Update the prize
-    const updatedPrize = await prisma.prize.update({
-      where: { id: params.id },
-      data: {
-        title,
-        description,
-        imageUrl: imageUrl || null,
-        quantityTotal,
-        quantityRemaining: newQuantityRemaining,
-        weight,
-      }
+    const updatedPrize = await updatePrizeWithCache(params.id, {
+      title,
+      description,
+      imageUrl: imageUrl || null,
+      quantityTotal,
+      quantityRemaining: newQuantityRemaining,
+      weight,
     })
 
     return NextResponse.json(updatedPrize)
@@ -146,9 +144,7 @@ export async function DELETE(
     }
 
     // Delete the prize
-    await prisma.prize.delete({
-      where: { id: params.id }
-    })
+    await deletePrizeWithCache(params.id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

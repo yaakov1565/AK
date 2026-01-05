@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { getCachedSponsorById, updateSponsorWithCache, deleteSponsorWithCache } from '@/lib/cached-queries'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 import { unlink } from 'fs/promises'
 import path from 'path'
@@ -22,14 +23,11 @@ export async function PUT(
     const { name, linkUrl, isActive, order } = await request.json()
     const { id } = params
 
-    const sponsor = await prisma.sponsorLogo.update({
-      where: { id },
-      data: {
-        name: name || undefined,
-        linkUrl: linkUrl || null,
-        isActive: isActive ?? undefined,
-        order: order ?? undefined
-      }
+    const sponsor = await updateSponsorWithCache(id, {
+      name: name || undefined,
+      linkUrl: linkUrl || null,
+      isActive: isActive ?? undefined,
+      order: order ?? undefined
     })
 
     // Revalidate to show updated content
@@ -63,9 +61,7 @@ export async function DELETE(
     const { id } = params
 
     // Get sponsor to find logo file
-    const sponsor = await prisma.sponsorLogo.findUnique({
-      where: { id }
-    })
+    const sponsor = await getCachedSponsorById(id)
 
     if (!sponsor) {
       return NextResponse.json(
@@ -75,9 +71,7 @@ export async function DELETE(
     }
 
     // Delete from database
-    await prisma.sponsorLogo.delete({
-      where: { id }
-    })
+    await deleteSponsorWithCache(id)
 
     // Try to delete logo file (don't fail if it doesn't exist)
     try {

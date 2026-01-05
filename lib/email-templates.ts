@@ -72,7 +72,7 @@ export function processTemplate(template: string, variables: TemplateVariables):
 export async function sendTemplatedEmail(type: string, data: EmailData): Promise<boolean> {
   // Check if Resend is configured
   if (!process.env.RESEND_API_KEY) {
-    console.log('Resend not configured, skipping email:', type)
+    console.error(`❌ RESEND_API_KEY not configured - cannot send email [${type}] to ${data.to}`)
     return false
   }
 
@@ -81,21 +81,21 @@ export async function sendTemplatedEmail(type: string, data: EmailData): Promise
     const template = await getTemplate(type)
     
     if (!template) {
-      console.error(`Template not found: ${type}`)
+      console.error(`❌ Template not found in database: ${type}`)
       return false
     }
 
     // Check if template is active
     if (!template.isActive) {
-      console.log(`Template ${type} is disabled, skipping email`)
+      console.error(`❌ Template ${type} is disabled - cannot send email to ${data.to}`)
       return false
     }
 
     // Process subject and body with variables
     const subject = processTemplate(template.subject, data.variables)
     const htmlBody = processTemplate(template.htmlBody, data.variables)
-    const textBody = template.textBody 
-      ? processTemplate(template.textBody, data.variables) 
+    const textBody = template.textBody
+      ? processTemplate(template.textBody, data.variables)
       : undefined
 
     // Send email with Resend
@@ -109,10 +109,26 @@ export async function sendTemplatedEmail(type: string, data: EmailData): Promise
       text: textBody
     })
 
-    console.log(`✅ Email sent successfully [${type}]:`, result)
+    console.log(`✅ Email sent successfully [${type}] to ${data.to}:`, result)
     return true
-  } catch (error) {
-    console.error(`❌ Failed to send email [${type}]:`, error)
+  } catch (error: any) {
+    // Detailed error logging
+    console.error(`❌ Failed to send email [${type}] to ${data.to}`)
+    console.error('Error details:', {
+      message: error?.message,
+      statusCode: error?.statusCode,
+      name: error?.name
+    })
+    
+    // Log specific Resend errors
+    if (error?.message?.includes('rate limit')) {
+      console.error('⚠️ RATE LIMIT EXCEEDED - Resend has rate limits on free tier')
+    } else if (error?.message?.includes('Invalid email')) {
+      console.error(`⚠️ INVALID EMAIL ADDRESS: ${data.to}`)
+    } else if (error?.statusCode === 429) {
+      console.error('⚠️ TOO MANY REQUESTS - Slow down email sending')
+    }
+    
     return false
   }
 }

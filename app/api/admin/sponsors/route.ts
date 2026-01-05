@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { getCachedSponsors, createSponsorWithCache } from '@/lib/cached-queries'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 
 /**
@@ -14,7 +15,7 @@ export async function GET() {
   }
 
   try {
-    const sponsors = await prisma.sponsorLogo.findMany({
+    const sponsors = await getCachedSponsors({
       orderBy: { order: 'asc' }
     })
     return NextResponse.json(sponsors)
@@ -77,14 +78,12 @@ export async function POST(request: NextRequest) {
     const newOrder = maxOrder ? maxOrder.order + 1 : 0
 
     // Create new sponsor
-    const sponsor = await prisma.sponsorLogo.create({
-      data: {
-        name,
-        logoUrl: dataUrl,
-        linkUrl: linkUrl || null,
-        order: newOrder,
-        isActive: true
-      }
+    const sponsor = await createSponsorWithCache({
+      name,
+      logoUrl: dataUrl,
+      linkUrl: linkUrl || null,
+      order: newOrder,
+      isActive: true
     })
 
     // Revalidate to show new content

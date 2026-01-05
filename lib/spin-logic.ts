@@ -1,6 +1,6 @@
 /**
  * Core spin logic for prize wheel
- * 
+ *
  * CRITICAL REQUIREMENTS:
  * 1. Prize selection MUST be server-side only
  * 2. MUST respect inventory (quantityRemaining > 0)
@@ -11,6 +11,8 @@
 
 import { prisma } from './prisma'
 import { Prize } from '@prisma/client'
+import { invalidateCache } from './cache'
+import { cache, CacheKeys, CACHE_TTL } from './cache'
 
 /**
  * Weighted random selection algorithm
@@ -110,7 +112,11 @@ export async function performSpin(code: string) {
         },
       })
 
-      // 7. Return success with prize info (don't expose internal IDs to client)
+      // 7. Invalidate caches since prize inventory and winners changed
+      invalidateCache.prizes()
+      invalidateCache.winners()
+
+      // 8. Return success with prize info (don't expose internal IDs to client)
       return {
         success: true,
         prize: {
@@ -133,21 +139,27 @@ export async function performSpin(code: string) {
 /**
  * Get all prizes for display on the wheel
  * Returns ONLY the visual information - NO inventory or odds data
+ * Uses caching to reduce database load
  */
 export async function getPrizesForWheel() {
-  const prizes = await prisma.prize.findMany({
-    select: {
-      id: true,
-      title: true,
-      imageUrl: true,
-      // Explicitly do NOT select quantityRemaining or weight
+  return cache.getOrSet(
+    CacheKeys.prizes.all(),
+    async () => {
+      const prizes = await prisma.prize.findMany({
+        select: {
+          id: true,
+          title: true,
+          imageUrl: true,
+          // Explicitly do NOT select quantityRemaining or weight
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      })
+      return prizes
     },
-    orderBy: {
-      createdAt: 'asc',
-    },
-  })
-
-  return prizes
+    CACHE_TTL.PRIZES
+  )
 }
 
 /**

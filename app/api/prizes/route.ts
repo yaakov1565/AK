@@ -7,7 +7,7 @@
 
 import { NextResponse } from 'next/server'
 import { getPrizesForWheel } from '@/lib/spin-logic'
-import { prisma } from '@/lib/prisma'
+import { createPrizeWithCache } from '@/lib/cached-queries'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 
 export async function GET() {
@@ -54,15 +54,13 @@ export async function POST(request: Request) {
     }
 
     // Create the prize
-    const prize = await prisma.prize.create({
-      data: {
-        title,
-        description,
-        imageUrl: imageUrl || null,
-        quantityTotal,
-        quantityRemaining: quantityTotal, // Initially, all are remaining
-        weight,
-      },
+    const prize = await createPrizeWithCache({
+      title,
+      description,
+      imageUrl: imageUrl || null,
+      quantityTotal,
+      quantityRemaining: quantityTotal, // Initially, all are remaining
+      weight,
     })
 
     return NextResponse.json(prize, { status: 201 })

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { getCachedRecentWinners } from '@/lib/cached-queries'
 
 // Disable all forms of caching for this route
 export const dynamic = 'force-dynamic'
@@ -11,25 +11,7 @@ export const revalidate = 0
  */
 export async function GET() {
   try {
-    const recentWinners = await prisma.winner.findMany({
-      take: 10,
-      orderBy: {
-        wonAt: 'desc'
-      },
-      include: {
-        prize: {
-          select: {
-            title: true,
-            imageUrl: true
-          }
-        },
-        code: {
-          select: {
-            name: true
-          }
-        }
-      }
-    })
+    const recentWinners = await getCachedRecentWinners(10)
 
     // Filter out any winners with null/deleted prize or code references
     const validWinners = recentWinners.filter((winner: any) => {

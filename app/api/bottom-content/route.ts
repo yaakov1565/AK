@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getCachedBottomContentSettings, getCachedSponsors, getCachedAdvertisements } from '@/lib/cached-queries'
 
 // Force dynamic rendering - don't cache this route
 export const dynamic = 'force-dynamic'
@@ -12,9 +13,7 @@ export const revalidate = 0
 export async function GET() {
   try {
     // Get or create the bottom content settings
-    let settings = await prisma.bottomContent.findFirst({
-      orderBy: { createdAt: 'desc' }
-    })
+    let settings = await getCachedBottomContentSettings()
 
     if (!settings) {
       // Create default settings if none exist
@@ -27,12 +26,12 @@ export async function GET() {
 
     // Fetch the appropriate content based on display type
     if (settings.displayType === 'ADVERTISEMENT') {
-      contentData = await prisma.advertisement.findMany({
+      contentData = await getCachedAdvertisements({
         where: { isActive: true },
         orderBy: { createdAt: 'desc' }
       })
     } else if (settings.displayType === 'SPONSOR_LOGOS') {
-      contentData = await prisma.sponsorLogo.findMany({
+      contentData = await getCachedSponsors({
         where: { isActive: true },
         orderBy: { order: 'asc' }
       })

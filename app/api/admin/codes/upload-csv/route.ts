@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
       
       for (const email of entry.emails) {
         try {
-          await sendTemplatedEmail('CODE_CREATED', {
+          const emailResult = await sendTemplatedEmail('CODE_CREATED', {
             to: email,
             variables: {
               customer_name: entry.name,
@@ -251,10 +251,19 @@ export async function POST(request: NextRequest) {
               app_name: 'Ateres Kallah'
             }
           })
-          console.log(`✅ Code created email sent to ${email}`)
-          emailsSent++
+          
+          if (emailResult) {
+            console.log(`✅ Code created email sent to ${email}`)
+            emailsSent++
+          } else {
+            console.error(`❌ Failed to send code email to ${email} - Check if template is active and Resend is configured`)
+            emailsFailed++
+          }
+          
+          // Add small delay between emails to avoid rate limiting (100ms)
+          await new Promise(resolve => setTimeout(resolve, 100))
         } catch (emailError) {
-          console.error(`Failed to send code email to ${email}:`, emailError)
+          console.error(`❌ Failed to send code email to ${email}:`, emailError)
           emailsFailed++
         }
       }
