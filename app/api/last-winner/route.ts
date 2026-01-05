@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { getCachedRecentWinners } from '@/lib/cached-queries'
+import { getCachedRecentWinnersData } from '@/lib/server-cache'
 
 // Cache this route for 2 minutes at the edge
 export const revalidate = 120
@@ -10,7 +10,7 @@ export const revalidate = 120
  */
 export async function GET() {
   try {
-    const recentWinners = await getCachedRecentWinners(10)
+    const recentWinners = await getCachedRecentWinnersData(10)
 
     // Filter out any winners with null/deleted prize or code references
     const validWinners = recentWinners.filter((winner: any) => {
