@@ -2,9 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getCachedBottomContentSettings, getCachedSponsors, getCachedAdvertisements } from '@/lib/cached-queries'
 
-// Force dynamic rendering - don't cache this route
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// Cache this route for 10 minutes at the edge
+export const revalidate = 600
 
 /**
  * GET /api/bottom-content

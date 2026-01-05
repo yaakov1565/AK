@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server'
 import { getCachedRecentWinners } from '@/lib/cached-queries'
 
-// Disable all forms of caching for this route
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// Cache this route for 2 minutes at the edge
+export const revalidate = 120
 
 /**
  * GET /api/last-winner

@@ -121,12 +121,13 @@ const globalForCache = globalThis as unknown as {
 }
 
 // Cache TTL configurations (in milliseconds)
+// Increased TTLs for Vercel serverless environment
 export const CACHE_TTL = {
-  PRIZES: 30000, // 30 seconds - frequently accessed
-  SPONSORS: 60000, // 1 minute - rarely changes
-  WINNERS: 10000, // 10 seconds - changes frequently
-  SETTINGS: 60000, // 1 minute - rarely changes
-  TEMPLATES: 300000, // 5 minutes - rarely changes
+  PRIZES: 300000, // 5 minutes - frequently accessed but stable
+  SPONSORS: 600000, // 10 minutes - rarely changes
+  WINNERS: 120000, // 2 minutes - changes when spins happen
+  SETTINGS: 600000, // 10 minutes - rarely changes
+  TEMPLATES: 1800000, // 30 minutes - rarely changes
 } as const
 
 export const cache = globalForCache.cache ?? new MemoryCache()

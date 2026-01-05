@@ -10,6 +10,9 @@ import { getPrizesForWheel } from '@/lib/spin-logic'
 import { createPrizeWithCache } from '@/lib/cached-queries'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 
+// Cache this route for 5 minutes
+export const revalidate = 300
+
 export async function GET() {
   try {
     const prizes = await getPrizesForWheel()
