@@ -78,30 +78,9 @@ export default function HomePage() {
       .catch(err => console.error('Failed to load recent winners:', err))
   }
 
-  // Load recent winners on mount
+  // Load recent winners on mount only (no automatic refresh)
   useEffect(() => {
     fetchWinners()
-  }, [])
-
-  // Refresh winners every 10 seconds to show latest winners
-  useEffect(() => {
-    const interval = setInterval(() => {
-      fetchWinners()
-    }, 10000) // 10 seconds
-
-    return () => clearInterval(interval)
-  }, [])
-
-  // Refresh winners when page becomes visible again
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        fetchWinners()
-      }
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [])
 
   // Handle code validation
