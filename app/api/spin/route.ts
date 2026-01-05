@@ -63,6 +63,8 @@ export async function POST(request: NextRequest) {
 
     // Send email notifications using templates
     try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spin2win-ak.org'
+      
       // 1. Send admin notification
       await sendTemplatedEmail('ADMIN_WIN_NOTIFICATION', {
         to: process.env.ADMIN_EMAIL || '',
@@ -73,7 +75,7 @@ export async function POST(request: NextRequest) {
           winner_email: codeData?.email || 'Unknown',
           spin_code: code,
           won_at: new Date().toLocaleString(),
-          admin_panel_url: `${process.env.NEXT_PUBLIC_APP_URL}/admin/winners`,
+          admin_panel_url: `${appUrl}/admin/winners`,
           app_name: 'Ateres Kallah',
           current_year: new Date().getFullYear()
         }

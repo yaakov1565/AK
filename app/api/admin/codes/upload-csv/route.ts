@@ -234,6 +234,8 @@ export async function POST(request: NextRequest) {
       codesCreated++
 
       // Send CODE_CREATED email to all recipients
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://spin2win-ak.org'
+      
       for (const email of entry.emails) {
         try {
           await sendTemplatedEmail('CODE_CREATED', {
@@ -243,7 +245,7 @@ export async function POST(request: NextRequest) {
               customer_email: email,
               spin_code: code,
               code_value: entry.amount,
-              spin_url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+              spin_url: appUrl,
               expiry_date: 'No expiration',
               current_year: new Date().getFullYear(),
               app_name: 'Ateres Kallah'
