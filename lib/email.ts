@@ -1,41 +1,42 @@
 /**
  * Email notification service
  * Sends notifications to admin when prizes are won
+ * Uses Resend for reliable email delivery
  */
 
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
 interface WinNotification {
   code: string
   prizeTitle: string
   timestamp: Date
+  winner?: {
+    name?: string
+    email?: string
+  }
 }
 
 /**
  * Send email notification to admin about a prize win
  */
 export async function sendWinNotification(data: WinNotification) {
-  // Skip in development if no email config
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER) {
-    console.log('Email not configured, skipping notification:', data)
+  // Skip if no Resend API key configured
+  if (!process.env.RESEND_API_KEY) {
+    console.log('Resend not configured, skipping notification:', data)
+    return
+  }
+
+  if (!process.env.ADMIN_EMAIL) {
+    console.log('Admin email not configured, skipping notification')
     return
   }
 
   try {
-    // Create transporter
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    })
+    const resend = new Resend(process.env.RESEND_API_KEY)
 
-    // Email content
-    const mailOptions = {
-      from: process.env.SMTP_USER,
+    // Send email using Resend
+    const result = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'Ateres Kallah <noreply@yourdomain.com>',
       to: process.env.ADMIN_EMAIL,
       subject: `🎉 New Prize Won - ${data.prizeTitle}`,
       html: `
@@ -78,6 +79,14 @@ export async function sendWinNotification(data: WinNotification) {
                 color: #d4af37;
                 font-weight: bold;
               }
+              .footer {
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #d4af37;
+                font-size: 12px;
+                color: #888;
+                text-align: center;
+              }
             </style>
           </head>
           <body>
@@ -90,19 +99,28 @@ export async function sendWinNotification(data: WinNotification) {
                 <div class="info">
                   <p><span class="label">Prize:</span> <span class="prize">${data.prizeTitle}</span></p>
                   <p><span class="label">Code Used:</span> ${data.code}</p>
+                  ${data.winner?.name ? `<p><span class="label">Winner Name:</span> ${data.winner.name}</p>` : ''}
+                  ${data.winner?.email ? `<p><span class="label">Winner Email:</span> ${data.winner.email}</p>` : ''}
                   <p><span class="label">Time:</span> ${data.timestamp.toLocaleString()}</p>
                 </div>
                 <p>Please contact the winner to arrange prize delivery.</p>
+                <p style="margin-top: 20px;">
+                  <a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/winners"
+                     style="display: inline-block; padding: 12px 24px; background-color: #d4af37; color: #0a1128; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                    View in Admin Panel
+                  </a>
+                </p>
+              </div>
+              <div class="footer">
+                <p>This is an automated notification from Ateres Kallah Spin to Win</p>
               </div>
             </div>
           </body>
         </html>
       `,
-    }
+    })
 
-    // Send email
-    await transporter.sendMail(mailOptions)
-    console.log('Win notification email sent successfully')
+    console.log('Win notification email sent successfully via Resend:', result)
   } catch (error) {
     console.error('Failed to send win notification email:', error)
     // Don't throw - we don't want email failure to break the spin

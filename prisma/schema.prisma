@@ -102,3 +102,17 @@ model SponsorLogo {
   
   @@index([order, isActive])
 }
+
+// EmailTemplate model - stores customizable email templates
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  type        String   @unique // "CODE_CREATED", "ADMIN_WIN_NOTIFICATION", "WINNER_CONFIRMATION"
+  subject     String   // Email subject line with variables
+  htmlBody    String   @db.Text // HTML email body with variables
+  textBody    String?  @db.Text // Plain text version (optional)
+  isActive    Boolean  @default(true) // Enable/disable template
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([type, isActive])
+}

@@ -2,13 +2,18 @@ import { redirect } from 'next/navigation'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 import CodeActions from '@/components/CodeActions'
+import CollapsibleSection from '@/components/CollapsibleSection'
 
 /**
  * Admin Codes Management Page
  * Generate and view one-time codes
  */
 
-export default async function AdminCodesPage() {
+export default async function AdminCodesPage({
+  searchParams,
+}: {
+  searchParams: { success?: string; created?: string; sent?: string; skipped?: string }
+}) {
   const isAuthenticated = await isAdminAuthenticated()
   
   if (!isAuthenticated) {
@@ -35,6 +40,20 @@ export default async function AdminCodesPage() {
             Code Management
           </h1>
           
+          {/* Success Message */}
+          {searchParams.success === 'upload' && (
+            <div className="bg-green-900/30 border-2 border-green-500 rounded-lg p-4 mb-6">
+              <h3 className="text-green-400 font-bold text-lg mb-2">✅ Upload Successful!</h3>
+              <p className="text-green-300">
+                <strong>{searchParams.created || 0}</strong> codes created,
+                <strong> {searchParams.sent || 0}</strong> emails sent successfully
+                {parseInt(searchParams.skipped || '0') > 0 && (
+                  <span>, <strong>{searchParams.skipped}</strong> entries skipped</span>
+                )}
+              </p>
+            </div>
+          )}
+          
           {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-4">
@@ -51,9 +70,62 @@ export default async function AdminCodesPage() {
             </div>
           </div>
 
-          {/* Generate Codes Form */}
-          <div className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-6">
-            <h2 className="text-xl font-bold text-gold-400 mb-4">Generate New Codes</h2>
+          {/* CSV Upload Section */}
+          <CollapsibleSection title="📁 Upload CSV File" defaultOpen={false}>
+            <p className="text-gray-300 mb-4">Upload a CSV file to create multiple codes at once.</p>
+            
+            <div className="bg-navy-900/50 border border-gold-500/20 rounded-lg p-4 mb-4">
+              <div className="flex justify-between items-start mb-2">
+                <p className="text-gray-300 text-sm"><strong>CSV Format:</strong></p>
+                <a
+                  href="/example-codes.csv"
+                  download
+                  className="text-gold-400 hover:text-gold-500 text-sm underline"
+                >
+                  Download Template
+                </a>
+              </div>
+              <code className="text-gold-400 text-xs block bg-navy-900 p-3 rounded">
+                name,emails,amount<br/>
+                Sarah Cohen,sarah@example.com,$1,500<br/>
+                David &amp; Rachel Levy,"david@example.com,rachel@example.com",$2,000<br/>
+                Miriam Stein,"miriam@example.com,miriam.stein@gmail.com",$1,000
+              </code>
+              <p className="text-gray-400 text-xs mt-2">
+                • <strong className="text-red-400">Only entries with $1,000+ will be processed</strong><br/>
+                • Multiple emails per entry (use quotes and separate with ,) - all get same code<br/>
+                • Duplicate emails are automatically skipped<br/>
+                • Header row (name,emails,amount) is optional<br/>
+                • Amount column is optional (defaults to $1,000)<br/>
+                • Maximum 500 entries per upload
+              </p>
+            </div>
+
+            <form action="/api/admin/codes/upload-csv" method="POST" encType="multipart/form-data">
+              <div className="mb-4">
+                <label htmlFor="csvFile" className="block text-gray-300 mb-2">
+                  Select CSV File
+                </label>
+                <input
+                  type="file"
+                  id="csvFile"
+                  name="csvFile"
+                  accept=".csv"
+                  className="w-full px-4 py-2 bg-navy-900 border border-gold-500/50 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-2 px-6 rounded-lg transition-colors"
+              >
+                Upload & Generate Codes
+              </button>
+            </form>
+          </CollapsibleSection>
+
+          {/* Generate Codes Form (Manual) */}
+          <CollapsibleSection title="✏️ Manual Code Generation" defaultOpen={false}>
             <form action="/api/admin/codes/generate" method="POST" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -111,7 +183,7 @@ export default async function AdminCodesPage() {
                 Generate Codes
               </button>
             </form>
-          </div>
+          </CollapsibleSection>
         </header>
 
         {/* Codes List */}

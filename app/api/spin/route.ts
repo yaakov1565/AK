@@ -12,7 +12,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { performSpin } from '@/lib/spin-logic'
 import { isRateLimited, recordFailedAttempt, resetAttempts, getClientIdentifier } from '@/lib/rate-limit'
-import { sendWinNotification } from '@/lib/email'
+import { sendTemplatedEmail } from '@/lib/email-templates'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
@@ -52,16 +52,55 @@ export async function POST(request: NextRequest) {
     // Success - reset rate limit attempts
     await resetAttempts(identifier)
 
-    // Send email notification to admin
+    // Get code data and full prize details for emails
+    const codeData = await prisma.spinCode.findUnique({
+      where: { code: code.trim().toUpperCase() }
+    })
+    
+    const prizeData = await prisma.prize.findUnique({
+      where: { id: result.prize!.id }
+    })
+
+    // Send email notifications using templates
     try {
-      await sendWinNotification({
-        code,
-        prizeTitle: result.prize!.title,
-        timestamp: new Date(),
+      // 1. Send admin notification
+      await sendTemplatedEmail('ADMIN_WIN_NOTIFICATION', {
+        to: process.env.ADMIN_EMAIL || '',
+        variables: {
+          prize_name: prizeData?.title || result.prize!.title,
+          prize_description: prizeData?.description || 'Amazing prize',
+          winner_name: codeData?.name || 'Unknown',
+          winner_email: codeData?.email || 'Unknown',
+          spin_code: code,
+          won_at: new Date().toLocaleString(),
+          admin_panel_url: `${process.env.NEXT_PUBLIC_APP_URL}/admin/winners`,
+          app_name: 'Ateres Kallah',
+          current_year: new Date().getFullYear()
+        }
       })
+      console.log('✅ Admin win notification sent')
+
+      // 2. Send winner confirmation
+      if (codeData?.email) {
+        await sendTemplatedEmail('WINNER_CONFIRMATION', {
+          to: codeData.email,
+          variables: {
+            winner_name: codeData.name || 'Winner',
+            prize_name: prizeData?.title || result.prize!.title,
+            prize_description: prizeData?.description || 'Amazing prize',
+            prize_image_url: result.prize!.imageUrl || '',
+            spin_code: code,
+            won_at: new Date().toLocaleString(),
+            contact_email: process.env.ADMIN_EMAIL || 'admin@example.com',
+            app_name: 'Ateres Kallah',
+            current_year: new Date().getFullYear()
+          }
+        })
+        console.log(`✅ Winner confirmation sent to ${codeData.email}`)
+      }
     } catch (emailError) {
       // Log but don't fail the request if email fails
-      console.error('Failed to send email notification:', emailError)
+      console.error('Failed to send email notifications:', emailError)
     }
 
     return NextResponse.json(result)

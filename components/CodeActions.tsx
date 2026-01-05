@@ -124,13 +124,6 @@ export default function CodeActions({ codeId, codeValue, name, email, isUsed }: 
 
   return (
     <div className="flex gap-2">
-      <a
-        href={generateEmailLink()}
-        className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors inline-block"
-        title="Send congratulations email"
-      >
-        📧 Email
-      </a>
       <button
         onClick={() => setIsEditing(true)}
         className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"

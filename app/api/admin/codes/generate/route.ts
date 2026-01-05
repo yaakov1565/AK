@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { isAdminAuthenticated } from '@/lib/admin-auth'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
+import { sendTemplatedEmail } from '@/lib/email-templates'
 
 /**
  * Generate a unique code in format AK-2024-XXXX
@@ -129,6 +130,29 @@ export async function POST(request: NextRequest) {
     await prisma.spinCode.createMany({
       data: codes,
     })
+
+    // Send CODE_CREATED email to each customer
+    for (const codeData of codes) {
+      try {
+        await sendTemplatedEmail('CODE_CREATED', {
+          to: codeData.email,
+          variables: {
+            customer_name: codeData.name,
+            customer_email: codeData.email,
+            spin_code: codeData.code,
+            code_value: '$1,000',
+            spin_url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+            expiry_date: 'No expiration',
+            current_year: new Date().getFullYear(),
+            app_name: 'Ateres Kallah'
+          }
+        })
+        console.log(`✅ Code created email sent to ${codeData.email}`)
+      } catch (emailError) {
+        // Log but don't fail the request if email fails
+        console.error(`Failed to send code email to ${codeData.email}:`, emailError)
+      }
+    }
 
     // Redirect back to codes page
     return NextResponse.redirect(new URL('/admin/codes', request.url))
