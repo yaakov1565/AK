@@ -87,8 +87,11 @@ export default function WinnersTicker({ winners }: WinnersTickerProps) {
                       width={96}
                       height={96}
                       className="object-cover rounded-xl border-2 border-gold-400/60 shadow-2xl transform group-hover:scale-105 transition-transform"
-                      quality={85}
+                      quality={75}
                       loading="lazy"
+                      placeholder="blur"
+                      blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIGZpbGw9IiMxYTI4NDciLz48L3N2Zz4="
+                      unoptimized={false}
                     />
                   </div>
                 </div>

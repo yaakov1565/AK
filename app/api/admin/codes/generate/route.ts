@@ -150,6 +150,10 @@ export async function POST(request: NextRequest) {
           }
         })
         console.log(`✅ Code created email sent to ${codeData.email}`)
+        
+        // Add delay between emails to respect Resend rate limits (600ms = ~1.67 emails/sec)
+        // Resend free tier: 2 emails per second max
+        await new Promise(resolve => setTimeout(resolve, 600))
       } catch (emailError) {
         // Log but don't fail the request if email fails
         console.error(`Failed to send code email to ${codeData.email}:`, emailError)

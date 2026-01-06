@@ -29,11 +29,11 @@ export async function GET() {
           timestamp: Date.now()
         })
 
-    // Aggressive cache prevention
-    response.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
-    response.headers.set('Pragma', 'no-cache')
-    response.headers.set('Expires', '0')
-    response.headers.set('Surrogate-Control', 'no-store')
+    // Cache for 2 minutes in browser/CDN to reduce server load
+    // This matches the server-side cache duration and reduces unnecessary requests
+    response.headers.set('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=60')
+    response.headers.set('CDN-Cache-Control', 'public, s-maxage=120')
+    response.headers.set('Vercel-CDN-Cache-Control', 'public, s-maxage=120')
     
     return response
   } catch (error) {

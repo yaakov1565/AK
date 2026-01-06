@@ -148,6 +148,8 @@ const emailTemplates = [
       <p class="header-subtitle">Spin <span class="fancy-number">2</span> Win</p>
     </div>
     <div class="content">
+      <p>Dearest {{customer_name}},</p>
+      
       <p>Congratulations on reaching <strong style="color: #d4af37;">{{code_value}}</strong> in your fundraising campaign!</p>
       
       <p>Here is your exclusive prize code for the Ateres Kallah Spin to Win:</p>
@@ -157,36 +159,30 @@ const emailTemplates = [
         <div class="code">{{spin_code}}</div>
       </div>
       
-      <p>Please visit our prize wheel page to use your code and claim your prize:</p>
+      <p>Please visit our prize wheel page to use your code and win your prize:</p>
       
       <p style="text-align: center;">
-        <a href="{{spin_url}}?code={{spin_code}}" class="button">CLAIM YOUR PRIZE</a>
-      </p>
-      
-      <p style="text-align: center; margin-top: 15px;">
-        <button onclick="navigator.clipboard.writeText('{{spin_code}}'); this.textContent='Copied!';"
-                style="padding: 10px 25px; background-color: rgba(212, 175, 55, 0.2); color: #d4af37; border: 2px solid #d4af37; border-radius: 6px; font-weight: 600; cursor: pointer; font-family: 'Playfair Display', Georgia, serif; font-size: 14px;">
-          Copy Code
-        </button>
+        <a href="{{spin_url}}?code={{spin_code}}" class="button">WIN YOUR PRIZE</a>
       </p>
       
       <p style="margin-top: 30px;">Thank you for your incredible support!</p>
       
       <p style="margin-top: 25px; color: #d1d5db;">
         Best regards,<br>
-        <strong style="color: #d4af37; font-size: 17px;">Ateres Kallah Team</strong>
+        <strong style="color: #d4af37; font-size: 17px;">Surelle Morgenstern & Ateres Kallah Team</strong>
       </p>
       
       <hr style="border: none; border-top: 1px solid rgba(212, 175, 55, 0.3); margin: 30px 0;">
       
       <p style="font-size: 14px; color: #9ca3af;">
         <strong>Website:</strong> <a href="{{spin_url}}" class="website-link">{{spin_url}}</a><br>
+        <strong>Contact:</strong> <a href="mailto:campaigns@atereskallah.com" class="website-link">campaigns@atereskallah.com</a><br>
         <strong>Note:</strong> This code can only be used once. Please keep it confidential.
       </p>
     </div>
     <div class="footer">
       <p style="margin: 0; color: #9ca3af;">© {{current_year}} Ateres Kallah. All rights reserved.</p>
-      <p style="margin: 12px 0 0 0;">Questions? Contact us at <a href="mailto:admin@spin2win-ak.org" class="website-link">admin@spin2win-ak.org</a></p>
+      <p style="margin: 12px 0 0 0;">Questions? Contact us at <a href="mailto:campaigns@atereskallah.com" class="website-link">campaigns@atereskallah.com</a></p>
     </div>
   </div>
 </body>

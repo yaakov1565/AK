@@ -260,8 +260,9 @@ export async function POST(request: NextRequest) {
             emailsFailed++
           }
           
-          // Add small delay between emails to avoid rate limiting (100ms)
-          await new Promise(resolve => setTimeout(resolve, 100))
+          // Add delay between emails to respect Resend rate limits (600ms = ~1.67 emails/sec)
+          // Resend free tier: 2 emails per second max
+          await new Promise(resolve => setTimeout(resolve, 600))
         } catch (emailError) {
           console.error(`❌ Failed to send code email to ${email}:`, emailError)
           emailsFailed++

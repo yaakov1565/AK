@@ -183,8 +183,10 @@ function ResultContent() {
                   width={400}
                   height={256}
                   className="max-w-full max-h-64 object-contain rounded-lg shadow-lg transform transition-transform hover:scale-105"
-                  quality={90}
+                  quality={80}
                   priority
+                  placeholder="blur"
+                  blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1NiIgdmVyc2lvbj0iMS4xIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjU2IiBmaWxsPSIjMWEyODQ3Ii8+PC9zdmc+"
                 />
               </div>
             </div>
