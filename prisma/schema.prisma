@@ -116,3 +116,31 @@ model EmailTemplate {
   
   @@index([type, isActive])
 }
+
+// VideoAccess model - whitelist of emails allowed to view videos
+model VideoAccess {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  maxViews  Int         @default(3) // Can customize per email if needed
+  createdAt DateTime    @default(now())
+  
+  // Relation to track actual views
+  views     VideoView[]
+  
+  @@index([email])
+}
+
+// VideoView model - tracks individual video views per email
+model VideoView {
+  id       String      @id @default(cuid())
+  email    String      // Email of viewer
+  videoId  String      // e.g., "highlights-video"
+  viewedAt DateTime    @default(now())
+  
+  // Relation to access record
+  accessId String
+  access   VideoAccess @relation(fields: [accessId], references: [id], onDelete: Cascade)
+  
+  @@index([email, videoId])
+  @@index([accessId])
+}

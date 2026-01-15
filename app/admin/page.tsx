@@ -142,6 +142,18 @@ export default async function AdminPage() {
               Customize automated emails
             </p>
           </a>
+
+          <a
+            href="/admin/video-access"
+            className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-8 hover:border-gold-500 transition-all duration-200 transform hover:scale-105"
+          >
+            <h2 className="text-2xl font-bold text-gold-400 mb-2">
+              🎥 Video Access
+            </h2>
+            <p className="text-gray-300">
+              Manage video viewing permissions
+            </p>
+          </a>
         </div>
 
         {/* Logout */}
