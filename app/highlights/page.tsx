@@ -1,6 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+declare global {
+  interface Window {
+    grecaptcha: any
+  }
+}
 
 interface ViewStatus {
   hasAccess: boolean
@@ -17,6 +23,23 @@ export default function HighlightsPage() {
   const [videoRevealed, setVideoRevealed] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false)
+
+  // Load reCAPTCHA v3 script
+  useEffect(() => {
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+    if (siteKey) {
+      const script = document.createElement('script')
+      script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
+      script.async = true
+      script.onload = () => setRecaptchaLoaded(true)
+      document.head.appendChild(script)
+      
+      return () => {
+        document.head.removeChild(script)
+      }
+    }
+  }, [])
 
   const handleCheckAccess = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,10 +73,27 @@ export default function HighlightsPage() {
     setLoading(true)
     
     try {
+      let recaptchaToken = null
+      
+      // Get reCAPTCHA token if available
+      const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+      if (recaptchaLoaded && siteKey && window.grecaptcha) {
+        try {
+          recaptchaToken = await window.grecaptcha.execute(siteKey, { action: 'watch_video' })
+        } catch (recaptchaError) {
+          console.error('reCAPTCHA error:', recaptchaError)
+          // Continue without token
+        }
+      }
+      
       const res = await fetch('/api/video-access/record', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, videoId: 'highlights-video' })
+        body: JSON.stringify({
+          email,
+          videoId: 'highlights-video',
+          recaptchaToken
+        })
       })
       
       const data = await res.json()

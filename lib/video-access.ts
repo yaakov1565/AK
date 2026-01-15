@@ -17,29 +17,32 @@ const DEFAULT_MAX_VIEWS = 3
 export async function checkEmailAccess(email: string, videoId: string) {
   const normalizedEmail = email.toLowerCase().trim()
   
-  // Check if email is in whitelist
+  // Check if email is in whitelist - use _count for efficiency
   const access = await prisma.videoAccess.findUnique({
     where: { email: normalizedEmail },
     include: {
-      views: {
-        where: { videoId },
-        orderBy: { viewedAt: 'desc' }
+      _count: {
+        select: {
+          views: {
+            where: { videoId }
+          }
+        }
       }
     }
   })
   
   if (!access) {
-    return { 
-      hasAccess: false, 
+    return {
+      hasAccess: false,
       canView: false,
-      viewCount: 0, 
+      viewCount: 0,
       remaining: 0,
       maxViews: 0,
       message: 'Email not authorized for video access'
     }
   }
   
-  const viewCount = access.views.length
+  const viewCount = access._count.views
   const remaining = access.maxViews - viewCount
   
   return {
@@ -60,20 +63,33 @@ export async function checkEmailAccess(email: string, videoId: string) {
 export async function recordView(email: string, videoId: string) {
   const normalizedEmail = email.toLowerCase().trim()
   
+  // Fetch access with view count in a single optimized query
   const access = await prisma.videoAccess.findUnique({
-    where: { email: normalizedEmail }
+    where: { email: normalizedEmail },
+    include: {
+      _count: {
+        select: {
+          views: {
+            where: { videoId }
+          }
+        }
+      }
+    }
   })
   
   if (!access) {
     throw new Error('Email not authorized')
   }
   
-  const status = await checkEmailAccess(normalizedEmail, videoId)
+  // Check view limit using the count from the query above
+  const viewCount = access._count.views
+  const remaining = access.maxViews - viewCount
   
-  if (!status.canView) {
+  if (remaining <= 0) {
     throw new Error('View limit reached')
   }
   
+  // Create the view record
   await prisma.videoView.create({
     data: {
       email: normalizedEmail,
