@@ -2,17 +2,40 @@
 
 /**
  * Admin Login Page
- * Simple password-based authentication
+ * Simple password-based authentication with reCAPTCHA protection
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+
+declare global {
+  interface Window {
+    grecaptcha: any
+  }
+}
 
 export default function AdminLoginPage() {
   const router = useRouter()
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false)
+
+  // Load reCAPTCHA v3 script
+  useEffect(() => {
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+    if (siteKey) {
+      const script = document.createElement('script')
+      script.src = `https://www.google.com/recaptcha/api.js?render=${siteKey}`
+      script.async = true
+      script.onload = () => setRecaptchaLoaded(true)
+      document.head.appendChild(script)
+      
+      return () => {
+        document.head.removeChild(script)
+      }
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,10 +43,23 @@ export default function AdminLoginPage() {
     setError('')
 
     try {
+      let recaptchaToken = null
+      
+      // Get reCAPTCHA token if available
+      const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+      if (recaptchaLoaded && siteKey && window.grecaptcha) {
+        try {
+          recaptchaToken = await window.grecaptcha.execute(siteKey, { action: 'admin_login' })
+        } catch (recaptchaError) {
+          console.error('reCAPTCHA error:', recaptchaError)
+          // Continue without token
+        }
+      }
+
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ password, recaptchaToken }),
       })
 
       const data = await res.json()
@@ -31,7 +67,7 @@ export default function AdminLoginPage() {
       if (data.success) {
         router.push('/admin')
       } else {
-        setError('Invalid password')
+        setError(data.error || 'Invalid password')
       }
     } catch (err) {
       setError('An error occurred')
