@@ -159,7 +159,7 @@ export default function HighlightsPage() {
               </button>
             </form>
           </div>
-        ) : viewStatus.canView ? (
+        ) : viewStatus.canView || videoRevealed ? (
           // Video Access Interface
           <div className="bg-navy-800/40 backdrop-blur-sm border-2 border-gold-400/40 rounded-lg p-8 shadow-2xl">
             <div className="text-center mb-6">
