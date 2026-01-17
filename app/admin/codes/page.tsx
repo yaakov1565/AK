@@ -12,7 +12,7 @@ import CollapsibleSection from '@/components/CollapsibleSection'
 export default async function AdminCodesPage({
   searchParams,
 }: {
-  searchParams: { success?: string; created?: string; sent?: string; skipped?: string }
+  searchParams: { success?: string; created?: string; sent?: string; skipped?: string; page?: string }
 }) {
   const isAuthenticated = await isAdminAuthenticated()
   
@@ -20,14 +20,21 @@ export default async function AdminCodesPage({
     redirect('/admin/login')
   }
 
-  const codes = await prisma.spinCode.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 50, // Show last 50 codes
-  })
+  // Pagination
+  const itemsPerPage = 50
+  const currentPage = parseInt(searchParams.page || '1')
+  const skip = (currentPage - 1) * itemsPerPage
 
   const totalCodes = await prisma.spinCode.count()
   const usedCodes = await prisma.spinCode.count({ where: { isUsed: true } })
   const availableCodes = totalCodes - usedCodes
+  const totalPages = Math.ceil(totalCodes / itemsPerPage)
+
+  const codes = await prisma.spinCode.findMany({
+    orderBy: { createdAt: 'desc' },
+    skip,
+    take: itemsPerPage,
+  })
 
   return (
     <div className="min-h-screen bg-navy-900 p-8">
@@ -186,9 +193,30 @@ export default async function AdminCodesPage({
           </CollapsibleSection>
         </header>
 
+        {/* Export Button */}
+        <div className="flex justify-end mb-4">
+          <a
+            href="/api/admin/codes/export-csv"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors flex items-center gap-2"
+            download
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+            Export All Codes to CSV
+          </a>
+        </div>
+
         {/* Codes List */}
         <div className="bg-navy-800 border-2 border-gold-500/30 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-gold-400 mb-4">Recent Codes (Last 50)</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-bold text-gold-400">
+              All Codes (Page {currentPage} of {totalPages})
+            </h2>
+            <p className="text-gray-400 text-sm">
+              Showing {skip + 1}-{Math.min(skip + itemsPerPage, totalCodes)} of {totalCodes} codes
+            </p>
+          </div>
           
           {codes.length === 0 ? (
             <p className="text-gray-400 text-center py-8">No codes generated yet</p>
@@ -242,6 +270,41 @@ export default async function AdminCodesPage({
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-6 pt-4 border-t border-gold-500/30">
+              {currentPage > 1 ? (
+                <a
+                  href={`?page=${currentPage - 1}`}
+                  className="px-4 py-2 rounded-lg font-semibold bg-gold-500 hover:bg-gold-600 text-navy-900 transition-colors"
+                >
+                  ← Previous
+                </a>
+              ) : (
+                <span className="px-4 py-2 rounded-lg font-semibold bg-gray-600 text-gray-400 cursor-not-allowed">
+                  ← Previous
+                </span>
+              )}
+              
+              <span className="text-gray-300 font-mono">
+                Page {currentPage} of {totalPages}
+              </span>
+              
+              {currentPage < totalPages ? (
+                <a
+                  href={`?page=${currentPage + 1}`}
+                  className="px-4 py-2 rounded-lg font-semibold bg-gold-500 hover:bg-gold-600 text-navy-900 transition-colors"
+                >
+                  Next →
+                </a>
+              ) : (
+                <span className="px-4 py-2 rounded-lg font-semibold bg-gray-600 text-gray-400 cursor-not-allowed">
+                  Next →
+                </span>
+              )}
             </div>
           )}
         </div>
